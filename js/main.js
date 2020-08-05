@@ -1,3 +1,9 @@
+/*----- constants -----*/
+/*----- app's state (variables) -----*/
+/*----- cached element references -----*/
+/*----- event listeners -----*/
+/*----- functions -----*/
+
 /*
 PSEDO CODE
 
@@ -37,5 +43,6 @@ AI logic:
     in battleship you can only put ships verticle and horizontal so once a ship hits the AI will start looking for verticle and horizontal positions.
     if the AI hits again vertically, it'll now know that the ship is verticle.
     once that ship is destroyed, the positions will be removed from the "great moves" array and the computer will go back to being random, repeat.
+    example: greatMoves['2,1', '2,2', '1,1'...]
 
 */
