@@ -41,7 +41,6 @@ init();
 
 function init() {
     createRandomBoard();
-    console.log(computer);
     turn = 1;
     initDOM();
     render();
@@ -51,13 +50,20 @@ function createRandomBoard() {
     const playerBoard = [];
     const shipBoard = [];
     const freePositions = [];
+
+    // SET FREE POSITIONS TO EVERYTHING IN BOARD
     for (let x = 0; x < game.boardSize; x++) {
         for (let y = 0; y < game.boardSize; y++) {
             freePositions.push([x, y]);
         }
     }
+
+    // CREATE A SHIP BOARD AT RANDOM WITH NO SHIPS COLLIDING
     findShipsPositions(freePositions, shipBoard);
+
+    // MAKE COMPUTER INITIALIZED TO CREATED SHIP BOARD
     computer = new Player(playerBoard, shipBoard);
+    console.log(computer);
 }
 
 function findShipsPositions(freePositions, shipBoard) {
@@ -88,7 +94,6 @@ function findShipsPositions(freePositions, shipBoard) {
 
     // SHIP HAS BEEN FOUND
     const ship = new Ship(posX, posY, xOff, yOff);
-    console.log(isShipInShip(ship, shipBoard));
     shipBoard.push(ship);
 
     // REMOVE NOT FREE POSITIONS
@@ -99,7 +104,6 @@ function findShipsPositions(freePositions, shipBoard) {
     // IF ALL SHIPS AREN'T FOUND, RUN AGAIN
     if (shipBoard.length-1 < game.shipAmount)
         return findShipsPositions(freePositions, shipBoard);
-    return shipBoard;
 }
 
 // CHECK IF SHIP COLLIDES WITH OTHER SHIPS IN BOARD
@@ -114,12 +118,18 @@ function isShipInShip(ship, shipBoard) {
     return false;
 }
 
+// CHECK IF SHIP COLLIDES WITH POSITION
 function isShipInPos(ship, x, y) {
     ship.pos.forEach(function(elm) {
          if (elm.includes([x, y])) 
              return true;
     })
     return false;
+}
+
+// CHECK IF SHIP COLLIDES WITH POSITION ARRAY
+function isShipInPosArray(ship, pos) {
+    return isShipInPos(ship, pos[0], pos[1]);
 }
 
 function initDOM() {
