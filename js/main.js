@@ -45,4 +45,10 @@ AI logic:
     once that ship is destroyed, the positions will be removed from the "great moves" array and the computer will go back to being random, repeat.
     example: greatMoves['2,1', '2,2', '1,1'...]
 
+Possible features:
+    I believe this will mostly be UI stuff
+        1. When picking ships it'll show you orientation and position they will be placed at
+        2. Possibility to actually show ships once destroyed <--- I really want to do this I am just unsure of how yet
+        3. If I can figure it out, make the ships draggable
+
 */
