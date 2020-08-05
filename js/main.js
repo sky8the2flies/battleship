@@ -1,21 +1,16 @@
 /*----- Classes -----*/
 class Ship {
     constructor(posX, posY, dirX, dirY) {
-        this.posX = [];
-        this.posY = [];
+        this.pos = [];
         this.dirX = dirX;
         this.dirY = dirY;
-        for (let x = 0; x <= dirX; x++) {
-            this.posX.push(posX + x);
-        }
-        for (let y = 0; y <= dirY; y++) {
-            this.posY.push(posY + y);
+        for (let i = 0; i <= dirX + dirY; i++) {
+            this.pos.push([posX + (dirX === 0 ? 0 : i), posY + (dirY === 0 ? 0 : i)]);
         }
     }
 }
 class Player {
-    constructor(player, playerBoard, shipBoard) {
-        this.player = player;
+    constructor(playerBoard, shipBoard) {
         this.playerBoard = playerBoard; // Stores hits and misses
         this.shipBoard = shipBoard; // Stores ship positions
     }
@@ -26,34 +21,105 @@ const game = {
     hit: '#fff',
     miss: '#fff',
     water: '#fff',
-    destroyer: 2, // Destroyer size
-    submarine: 3, // Submarine size
-    cruiser: 3, // Cruiser size
-    battleship: 4, // Battleship size
-    carrier: 5 // Carrier size
+    shipAmount: 4, // Total ships
+    '0': 5, // Destroyer size
+    '1': 4, // Submarine size
+    '2': 3, // Cruiser size
+    '3': 3, // Battleship size
+    '4': 2 // Carrier size
 }
 /*----- app's state (variables) -----*/
 let player;
 let computer;
 let turn;
 let greatMoves; // Stores "great moves" for computer
+let count = 0;
 /*----- cached element references -----*/
 /*----- event listeners -----*/
 /*----- functions -----*/
 init();
 
 function init() {
-    playerBoard = [];
-    computerBoard = [];
-    shipBoardPlayer = [];
-    shipBoardComputer = [];
+    createRandomBoard();
+    console.log(computer);
     turn = 1;
     initDOM();
     render();
 }
 
+function createRandomBoard() {
+    const playerBoard = [];
+    const shipBoard = [];
+    const freePositions = [];
+    for (let x = 0; x < game.boardSize; x++) {
+        for (let y = 0; y < game.boardSize; y++) {
+            freePositions.push([x, y]);
+        }
+    }
+    findShipsPositions(freePositions, shipBoard);
+    computer = new Player(playerBoard, shipBoard);
+}
+
+function findShipsPositions(freePositions, shipBoard) {
+    const randomDirection = Math.floor(Math.random() * (1+1));
+    const min = 0;
+    const max = freePositions.length - 1;
+    const randomIndex = Math.floor(Math.random() * (max - min + 1) + min);
+
+    // CHECK IF RANDOM NUMBER CAN HOLD SHIP
+    if (freePositions[randomIndex][randomDirection] > (10 - game[shipBoard.length])) {
+        return findShipsPositions(freePositions, shipBoard);
+    }
+
+    // CHECK IF SHIPS ARE OVERLAPPING
+    const freePos = freePositions[randomIndex];
+    const posX = freePos[0];
+    const posY = freePos[1];
+    const xOff = randomDirection === 0 ? game[shipBoard.length]-1 : 0;
+    const yOff = randomDirection === 1 ? game[shipBoard.length]-1 : 0;
+    for (let i = 0 ; i < game.shipAmount; i++) {
+        if (shipBoard[i] === undefined) break;
+        for (let x = 0 ; x < game[shipBoard.length-1]; x++) {
+            if (isShipInPos(shipBoard[i], posX + (xOff === 0 ? 0 : x), posY + (yOff === 0 ? 0 : x))) {
+                return findShipsPositions(freePositions, shipBoard);
+            }
+        }
+    }
+
+    // SHIP HAS BEEN FOUND
+    const ship = new Ship(posX, posY, xOff, yOff);
+    console.log(isShipInShip(ship, shipBoard));
+    shipBoard.push(ship);
+
+    // REMOVE NOT FREE POSITIONS
+    let filterArr = [];
+    ship.pos.forEach((pos) => filterArr = freePositions.filter((elm) => pos[0] !== elm[0] && pos[1] !== elm[1]))
+    freePositions = filterArr;
+
+    // IF ALL SHIPS AREN'T FOUND, RUN AGAIN
+    if (shipBoard.length-1 < game.shipAmount)
+        return findShipsPositions(freePositions, shipBoard);
+    return shipBoard;
+}
+
+// CHECK IF SHIP COLLIDES WITH OTHER SHIPS IN BOARD
+function isShipInShip(ship, shipBoard) {
+    shipBoard.filter((elm) => ship !== elm);
+    shipBoard.forEach(function(s2) {
+        s2.pos.forEach(function(pos) {
+            if (isShipInPos(ship, pos[0], pos[1])) 
+                return true;
+        });
+    });
+    return false;
+}
+
 function isShipInPos(ship, x, y) {
-    return ship.posX.includes(x) && ship.posY.includes(y);
+    ship.pos.forEach(function(elm) {
+         if (elm.includes([x, y])) 
+             return true;
+    })
+    return false;
 }
 
 function initDOM() {
