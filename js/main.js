@@ -9,6 +9,7 @@ app variables:
     playerBoard for misses hits and null
     computerBoard for misses hits and null
     turn for computer and player (-1 and 1)?
+    greatMoves array for the computer to "think"
 
 init function:
     one board that shows the players hits and misses and null (not used)
@@ -29,5 +30,12 @@ win logic:
 
 click logic:
     get position from id splitting it between the "," first value will be posX, second will be posY
+
+AI logic:
+    this is going to be the difficult part. The computer will randomly pick a square between the grid until it hits.
+    the hits will then be added to a "great moves" array where it'll act like a node that the computer can now use to "look" for other possible hits.
+    in battleship you can only put ships verticle and horizontal so once a ship hits the AI will start looking for verticle and horizontal positions.
+    if the AI hits again vertically, it'll now know that the ship is verticle.
+    once that ship is destroyed, the positions will be removed from the "great moves" array and the computer will go back to being random, repeat.
 
 */
