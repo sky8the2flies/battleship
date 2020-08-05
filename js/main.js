@@ -1,8 +1,68 @@
+/*----- Classes -----*/
+class Ship {
+    constructor(posX, posY, dirX, dirY) {
+        this.posX = [];
+        this.posY = [];
+        this.dirX = dirX;
+        this.dirY = dirY;
+        for (let x = 0; x <= dirX; x++) {
+            this.posX.push(posX + x);
+        }
+        for (let y = 0; y <= dirY; y++) {
+            this.posY.push(posY + y);
+        }
+    }
+}
+class Player {
+    constructor(player, playerBoard, shipBoard) {
+        this.player = player;
+        this.playerBoard = playerBoard; // Stores hits and misses
+        this.shipBoard = shipBoard; // Stores ship positions
+    }
+}
 /*----- constants -----*/
+const game = {
+    boardSize: 10,
+    hit: '#fff',
+    miss: '#fff',
+    water: '#fff',
+    destroyer: 2, // Destroyer size
+    submarine: 3, // Submarine size
+    cruiser: 3, // Cruiser size
+    battleship: 4, // Battleship size
+    carrier: 5 // Carrier size
+}
 /*----- app's state (variables) -----*/
+let player;
+let computer;
+let turn;
+let greatMoves; // Stores "great moves" for computer
 /*----- cached element references -----*/
 /*----- event listeners -----*/
 /*----- functions -----*/
+init();
+
+function init() {
+    playerBoard = [];
+    computerBoard = [];
+    shipBoardPlayer = [];
+    shipBoardComputer = [];
+    turn = 1;
+    initDOM();
+    render();
+}
+
+function isShipInPos(ship, x, y) {
+    return ship.posX.includes(x) && ship.posY.includes(y);
+}
+
+function initDOM() {
+    
+}
+
+function render() {
+
+}
 
 /*
 PSEDO CODE
