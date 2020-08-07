@@ -34,15 +34,73 @@ let computer;
 let turn;
 let greatMoves; // Stores "great moves" for computer
 let count = 0;
+let tempBoard = [];
+let direction = 1;
+let color = 'green';
 /*----- cached element references -----*/
+const gridEl = document.querySelectorAll('tr.grid-parent');
 /*----- event listeners -----*/
+document.querySelector('.grid-container').addEventListener('click', handleClick);
+document.querySelector('.grid-container').addEventListener('mouseover', handleMouseOver);
+document.querySelector('.grid-container').addEventListener('mouseout', handleMouseOut);
 /*----- functions -----*/
 init();
 
+function handleMouseOver(e) {
+    //TODO render where ship will be placed 
+    if (e.target.id === '' || player.shipBoard.length >= 5) return;
+    const posArr = e.target.id.split(',');
+    const posX = parseInt(posArr[0]);
+    const posY = parseInt(posArr[1]);
+    for (let i = 0; i < game[player.shipBoard.length]; i++) {
+        let posXOff = posX + (direction === 0 ? i : 0)
+        let posYOff = posY + (direction === 1 ? i : 0)
+        tempBoard.push([posXOff, posYOff]);
+        if (posXOff > 9 
+        || posYOff > 9 
+        || isShipInArray(player.shipBoard, tempBoard)) {
+            color = 'red';
+        } else {
+            color = 'green';
+        }
+    }
+    render();
+}
+
+function handleMouseOut(e) {
+    if (e.target.id === '' || player.shipBoard.length >= 5) return;
+    color = 'white';
+    render();
+    tempBoard = [];
+}
+
+function handleClick(e) {
+    if (e.target.id === '') return;
+    if (player.shipBoard.length < 5) {
+        if (isShipInArray(player.shipBoard, tempBoard)) return;
+        const posArr = e.target.id.split(',');
+        const posX = parseInt(posArr[0]);
+        const posY = parseInt(posArr[1]);
+        if (posX + (direction === 0 ? game[player.shipBoard.length]-1 : 0) > 9 || posY + (direction === 1 ? game[player.shipBoard.length]-1 : 0) > 9) return;
+        const ship = new Ship(posX, posY, (direction === 0 ? game[player.shipBoard.length]-1 : 0), (direction === 1 ? game[player.shipBoard.length]-1 : 0))
+        player.shipBoard.push(ship);
+        color = 'red';
+        if (player.shipBoard.length >= 5) {
+            tempBoard = [];
+            color = 'white';
+        } else {
+            tempBoard.pop();
+        }
+        render();
+        return;
+    }
+    // CALLS WHEN GAME BEGINS
+}
+
 function init() {
+    player = new Player([], []);
     createRandomBoard();
     turn = 1;
-    initDOM();
     render();
 }
 
@@ -63,7 +121,6 @@ function createRandomBoard() {
 
     // MAKE COMPUTER INITIALIZED TO CREATED SHIP BOARD
     computer = new Player(playerBoard, shipBoard);
-    console.log(computer);
 }
 
 function findShipsPositions(freePositions, shipBoard) {
@@ -93,7 +150,7 @@ function findShipsPositions(freePositions, shipBoard) {
     }
 
     // SHIP HAS BEEN FOUND
-    const ship = new Ship(posX, posY, xOff, yOff);
+    let ship = new Ship(posX, posY, xOff, yOff);
     shipBoard.push(ship);
 
     // REMOVE NOT FREE POSITIONS
@@ -108,37 +165,89 @@ function findShipsPositions(freePositions, shipBoard) {
 
 // CHECK IF SHIP COLLIDES WITH OTHER SHIPS IN BOARD
 function isShipInShip(ship, shipBoard) {
+    let inPos = false;
     shipBoard.filter((elm) => ship !== elm);
     shipBoard.forEach(function(s2) {
         s2.pos.forEach(function(pos) {
             if (isShipInPos(ship, pos[0], pos[1])) 
-                return true;
+                inPos = true;
         });
     });
-    return false;
+    return inPos;
+}
+
+function isShipInArray(shipArr, posArr) {
+    let inPos = false;
+    shipArr.forEach(function(ship) {
+        posArr.forEach(function(pos) {
+            if (isShipInPos(ship, pos[0], pos[1])) {
+                inPos = true;
+            }
+        });
+    });
+    return inPos;
+}
+
+// CHECK IF ANY SHIP IN ARRAY COLLIDES WITH POSITION
+function isShipInPosArray(shipArr, x, y) {
+    let inPos = false;
+    shipArr.forEach(function(ship) {
+        inPos = isShipInPos(ship, x, y);
+    });
+    return inPos;
 }
 
 // CHECK IF SHIP COLLIDES WITH POSITION
 function isShipInPos(ship, x, y) {
-    ship.pos.forEach(function(elm) {
-         if (elm.includes([x, y])) 
-             return true;
-    })
-    return false;
+    return ship.pos.some((pos) => (pos[0] === x) && (pos[1] === y));
 }
 
-// CHECK IF SHIP COLLIDES WITH POSITION ARRAY
-function isShipInPosArray(ship, pos) {
-    return isShipInPos(ship, pos[0], pos[1]);
+function render() { // gridEl[Y].children[X]
+    if (player.playerBoard.length === 0 && computer.playerBoard.length === 0) {
+        renderShipBoard(player.shipBoard, 'white');
+    }
+    if (player.shipBoard.length < 5) {
+        renderShipBoard(player.shipBoard, 'green');
+        tempBoard.forEach(function(pos) {
+            if (pos !== null) {
+                const elmParent = gridEl[pos[0]];
+                if (elmParent!== undefined) {
+                    const elm = elmParent.children[pos[1]+1];
+                    if (elm !== undefined)
+                        elm.style.background = color;
+                }
+            }
+        });
+    }
 }
 
-function initDOM() {
-    
+function renderShipBoard(shipBoard, color) {
+    shipBoard.forEach(function(ship) {
+        ship.pos.forEach(function(pos) {
+            const elm = gridEl[pos[0]].children[pos[1]+1];
+            elm.style.background = color;
+        });
+    });
 }
 
-function render() {
-
-}
+    // display ships with in-position
+    // computer.shipBoard.forEach(function(ship) {
+    //     for (let x = 0; x < game.boardSize; x++) {
+    //         for (let y = 0; y < game.boardSize; y++) {
+    //             if (isShipInPos(ship, x, y)) {
+    //                 const elm = gridEl[y].children[x+1];
+    //                 elm.style.background = 'green';
+    //             }
+    //         }
+    //     }
+    // });
+    // display ships with ship arrays
+    // computer.shipBoard.forEach(function(ship) {
+    //     ship.pos.forEach(function(pos) {
+    //         const elm = gridEl[pos[1]].children[pos[0]+1];
+    //         elm.style.background = 'green';
+    //     });
+    // });
 
 /*
 PSEDO CODE
