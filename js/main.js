@@ -36,16 +36,18 @@ let greatMoves = []; // Stores "great moves" for computer
 let allPositions; // Stores all positions for computer
 let count = 0;
 let tempBoard = [];
-let direction = 0;
+let direction = 1;
 let nodeArray = [];
 let color = 'green';
 /*----- cached element references -----*/
 const gridEl = document.querySelectorAll('tr.grid-parent');
 const gridContainerEl = document.querySelector('.grid-container');
+const playerBoardEls = document.querySelectorAll('tr.ship-parent');
 /*----- event listeners -----*/
 gridContainerEl.addEventListener('click', handleClick);
 gridContainerEl.addEventListener('mouseover', handleMouseOver);
 gridContainerEl.addEventListener('mouseout', handleMouseOut);
+document.querySelector('button').addEventListener('click', (e) => direction === 1 ? direction = 0 : direction = 1);
 /*----- functions -----*/
 init();
 
@@ -118,7 +120,6 @@ function handleNextMove() {
         const posIndex = Math.floor(Math.random() * (max - min + 1) + min);
         let pos = positions[posIndex];
         computer.playerBoard.push(pos);
-        //console.log(greatMoves);
         handleGreatMoves(pos);
         allPositions = allPositions.filter(aPos => aPos.toString() !== pos.toString()); // must get index of to actually filter [8, 0] is not [8, 0] ????
         greatMoves = greatMoves.filter(gPos => gPos.toString() !== pos.toString());
@@ -164,7 +165,6 @@ function handleGreatMoves(pos) { // 5,5 hit [ [5,6], [5,4], [6, 5], [4, 5] ] => 
 }
 
 function addPosToArray(arr, x, y, xOff, yOff) {
-    console.log(isShipInPosArray(player.shipBoard, x, y), x >= 0, x <= 9, y >= 0,  y <= 9, !allPositions.every(pos => pos.toString() !== [x+xOff,y+yOff].toString()), x+xOff, y+yOff)
     if (isShipInPosArray(player.shipBoard, x, y) && x >= 0 && x <= 9 && y >= 0 && y <= 9 && !allPositions.every(pos => pos.toString() !== [x+xOff,y+yOff].toString()))
         arr.push([x+xOff,y+yOff]);
 }
@@ -293,7 +293,35 @@ function render() { // gridEl[Y].children[X]
             }
         });
     }
-    renderHits(computer.playerBoard, player.shipBoard);
+    renderHits(player.playerBoard, computer.shipBoard);
+    renderComputerHits(computer.playerBoard, player.shipBoard);
+}
+
+function getShipIndex(shipBoard, x, y) {
+    let index = -1;
+    shipBoard.forEach(function(ship, idx) {
+        const mapBoard = ship.pos.map(pos => pos.toString());
+        if (mapBoard.includes([x,y].toString())) {
+            index = idx;
+        }
+    });
+    return index;
+}
+
+function getPosIndex(ship, x, y) {
+    const mapBoard = ship.pos.map(pos => pos.toString());
+    return mapBoard.indexOf([x,y].toString());
+}
+
+function renderComputerHits(playerBoard, shipBoard) {
+    playerBoard.forEach(function(pos) {
+        if (isShipInPosArray(shipBoard, pos[0], pos[1])) {
+            let shipIndex = getShipIndex(shipBoard, pos[0], pos[1]);
+            let posIndex = getPosIndex(shipBoard[shipIndex], pos[0], pos[1]);
+            const shipEl = playerBoardEls[shipIndex].children[posIndex];
+            shipEl.style.background = 'red';
+        }
+    });
 }
 
 function renderHits(playerBoard, shipBoard) {
