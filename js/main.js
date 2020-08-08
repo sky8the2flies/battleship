@@ -3,12 +3,13 @@
     [] Update html #msg tag respectively
     [] possibly add delay for computer decision
     [] Check for win on either side
-    [] game.'color' change to hits and misses
+    [X] game.'color' change to hits and misses
+    [] check if player has already placed in that grid
     [] refactor code, there are so many improvements I can currently think of:
      [X] create "player class", will reduce amount of "lets in app state variables"
      [X] create "computer class", will also clear of some more lets in app state
-     [] organize code to where functions that do certain things are in their place
-     [] check for ";" on all lines.
+     [X] organize code to where functions that do certain things are in their place
+     [X] check for ";" on all lines.
      [] Make sure that all "loops" are done to the best that they can, this will take the most time.
      [] lable code for project presentation.
 
@@ -119,6 +120,7 @@ function handleMouseOver(e) {
     const posArr = e.target.id.split(',');
     const posX = parseInt(posArr[0]);
     const posY = parseInt(posArr[1]);
+    player.tempBoard = [];
     for (let i = 0; i < game[player.shipBoard.length]; i++) {
         let posXOff = posX + (player.direction === 0 ? i : 0)
         let posYOff = posY + (player.direction === 1 ? i : 0)
@@ -138,7 +140,6 @@ function handleMouseOut(e) {
     if (e.target.id === '' || player.shipBoard.length >= 5) return;
     player.color = game.water;
     render();
-    player.tempBoard = [];
 }
 
 function handleClick(e) {
@@ -147,9 +148,10 @@ function handleClick(e) {
     const posX = parseInt(posArr[0]);
     const posY = parseInt(posArr[1]);
     if (player.shipBoard.length < 5) {
+        // CALLS WHEN PLAYER NEEDS TO PLACE SHIPS
         if (isShipInArray(player.shipBoard, player.tempBoard)) return;
         if (posX + (player.direction === 0 ? game[player.shipBoard.length]-1 : 0) > 9 || posY + (player.direction === 1 ? game[player.shipBoard.length]-1 : 0) > 9) return;
-        const ship = new Ship(posX, posY, (player.direction === 0 ? game[player.shipBoard.length]-1 : 0), (player.direction === 1 ? game[player.shipBoard.length]-1 : 0))
+        const ship = new Ship(posX, posY, (player.direction === 0 ? game[player.shipBoard.length]-1 : 0), (player.direction === 1 ? game[player.shipBoard.length]-1 : 0));
         player.shipBoard.push(ship);
         player.color = game.hit;
         if (player.shipBoard.length >= 5) {
@@ -170,9 +172,6 @@ function handleClick(e) {
 }
 
 function handleNextMove() {
-    // WAIT FOR PLAYER INPUT
-    if (turn === 1 && player.playerBoard.length === 0 && computer.playerBoard.length === 0)
-        return;
     turn = turn * -1;
     if (turn === -1) {
         //COMPUTER TURN
@@ -183,7 +182,7 @@ function handleNextMove() {
         let pos = positions[posIndex];
         computer.playerBoard.push(pos);
         handleGreatMoves(pos);
-        computer.allPositions = computer.allPositions.filter(aPos => aPos.toString() !== pos.toString()); // must get index of to actually filter [8, 0] is not [8, 0] ????
+        computer.allPositions = computer.allPositions.filter(aPos => aPos.toString() !== pos.toString());
         computer.greatMoves = computer.greatMoves.filter(gPos => gPos.toString() !== pos.toString());
         handleNextMove();
     } 
@@ -210,14 +209,14 @@ function handleGreatMoves(pos) {
         if (nodeDirection === 0) {
             computer.nodeArray = computer.nodeArray.sort((a,b) =>  a[1] - b[1]);
             computer.greatMoves = [];
-            addPosToArray(computer.greatMoves, computer.nodeArray[0][0], computer.nodeArray[0][1], 0, -1)
+            addPosToArray(computer.greatMoves, computer.nodeArray[0][0], computer.nodeArray[0][1], 0, -1);
             addPosToArray(computer.greatMoves, computer.nodeArray[computer.nodeArray.length-1][0], computer.nodeArray[computer.nodeArray.length-1][1], 0, 1);
             if (computer.greatMoves.length == 0 || computer.nodeArray.length >= 6) 
                 computer.nodeArray = [];
         } else {
             computer.nodeArray = computer.nodeArray.sort((a,b) => a[0] - b[0]);
             computer.greatMoves = [];
-            addPosToArray(computer.greatMoves, computer.nodeArray[0][0], computer.nodeArray[0][1], -1, 0)
+            addPosToArray(computer.greatMoves, computer.nodeArray[0][0], computer.nodeArray[0][1], -1, 0);
             addPosToArray(computer.greatMoves, computer.nodeArray[computer.nodeArray.length-1][0], computer.nodeArray[computer.nodeArray.length-1][1], 1, 0);
             if (computer.greatMoves.length == 0 || computer.nodeArray.length >= 6) 
                 computer.nodeArray = [];
