@@ -32,17 +32,20 @@ const game = {
 let player;
 let computer;
 let turn;
-let greatMoves; // Stores "great moves" for computer
+let greatMoves = []; // Stores "great moves" for computer
+let allPositions; // Stores all positions for computer
 let count = 0;
 let tempBoard = [];
-let direction = 1;
+let direction = 0;
+let nodeArray = [];
 let color = 'green';
 /*----- cached element references -----*/
 const gridEl = document.querySelectorAll('tr.grid-parent');
+const gridContainerEl = document.querySelector('.grid-container');
 /*----- event listeners -----*/
-document.querySelector('.grid-container').addEventListener('click', handleClick);
-document.querySelector('.grid-container').addEventListener('mouseover', handleMouseOver);
-document.querySelector('.grid-container').addEventListener('mouseout', handleMouseOut);
+gridContainerEl.addEventListener('click', handleClick);
+gridContainerEl.addEventListener('mouseover', handleMouseOver);
+gridContainerEl.addEventListener('mouseout', handleMouseOut);
 /*----- functions -----*/
 init();
 
@@ -76,18 +79,18 @@ function handleMouseOut(e) {
 
 function handleClick(e) {
     if (e.target.id === '') return;
+    const posArr = e.target.id.split(',');
+    const posX = parseInt(posArr[0]);
+    const posY = parseInt(posArr[1]);
     if (player.shipBoard.length < 5) {
         if (isShipInArray(player.shipBoard, tempBoard)) return;
-        const posArr = e.target.id.split(',');
-        const posX = parseInt(posArr[0]);
-        const posY = parseInt(posArr[1]);
         if (posX + (direction === 0 ? game[player.shipBoard.length]-1 : 0) > 9 || posY + (direction === 1 ? game[player.shipBoard.length]-1 : 0) > 9) return;
         const ship = new Ship(posX, posY, (direction === 0 ? game[player.shipBoard.length]-1 : 0), (direction === 1 ? game[player.shipBoard.length]-1 : 0))
         player.shipBoard.push(ship);
         color = 'red';
         if (player.shipBoard.length >= 5) {
             tempBoard = [];
-            color = 'white';
+            handleNextMove();
         } else {
             tempBoard.pop();
         }
@@ -95,12 +98,81 @@ function handleClick(e) {
         return;
     }
     // CALLS WHEN GAME BEGINS
+    if (turn === 1) {
+        player.playerBoard.push([posX, posY]);
+        handleNextMove();
+    }
+    render();
+}
+
+function handleNextMove() {
+    // WAIT FOR PLAYER INPUT
+    if (turn === 1 && player.playerBoard.length === 0 && computer.playerBoard.length === 0)
+        return;
+    turn = turn * -1;
+    if (turn === -1) {
+        //COMPUTER TURN
+        let positions = (greatMoves.length > 0 ? greatMoves : allPositions);
+        const min = 0;
+        const max = positions.length-1;
+        const posIndex = Math.floor(Math.random() * (max - min + 1) + min);
+        let pos = positions[posIndex];
+        computer.playerBoard.push(pos);
+        //console.log(greatMoves);
+        handleGreatMoves(pos);
+        allPositions = allPositions.filter(aPos => aPos.toString() !== pos.toString()); // must get index of to actually filter [8, 0] is not [8, 0] ????
+        greatMoves = greatMoves.filter(gPos => gPos.toString() !== pos.toString());
+        handleNextMove();
+    } 
+}
+
+function handleGreatMoves(pos) { // 5,5 hit [ [5,6], [5,4], [6, 5], [4, 5] ] => 5,5 & 5,6 hit [ [5,7], [5,4] ] => 5,5 & 5,6 & 5,7 miss [ [5, 4] ] => 5,5 & 5,6 & 5,7 & 5,4 destroy
+    // Keep moves random if no hit
+    if (!isShipInPosArray(player.shipBoard, pos[0], pos[1]) && greatMoves.length === 0) return;
+
+    // First index of 'hit' add initial great moves
+    if (nodeArray.length === 0) {
+        //greatMoves.push([pos[0]+1, pos[1]],[pos[0]-1, pos[1]],[pos[0], pos[1]+1],[pos[0], pos[1]-1]);
+        addPosToArray(greatMoves, pos[0], pos[1], 1, 0);
+        addPosToArray(greatMoves, pos[0], pos[1], -1, 0);
+        addPosToArray(greatMoves, pos[0], pos[1], 0, 1);
+        addPosToArray(greatMoves, pos[0], pos[1], 0, -1);
+    }
+    // Push current pos to nodeArray
+    nodeArray.push(pos);
+
+    // Once node has 2 items, begin comparasin
+    if (nodeArray.length > 1) {
+        const nodeDirX = nodeArray[nodeArray.length-1][0] - nodeArray[0][0];
+        const nodeDirection = (nodeDirX === 0 ? 0 : 1);
+        if (nodeDirection === 0) {
+            nodeArray = nodeArray.sort((a,b) =>  a[1] - b[1]);
+            greatMoves = [];
+            addPosToArray(greatMoves, nodeArray[0][0], nodeArray[0][1], 0, -1)
+            addPosToArray(greatMoves, nodeArray[nodeArray.length-1][0], nodeArray[nodeArray.length-1][1], 0, 1);
+            if (greatMoves.length == 0 || nodeArray.length >= 6) 
+                nodeArray = [];
+        } else {
+            nodeArray = nodeArray.sort((a,b) => a[0] - b[0]);
+            greatMoves = [];
+            addPosToArray(greatMoves, nodeArray[0][0], nodeArray[0][1], -1, 0)
+            addPosToArray(greatMoves, nodeArray[nodeArray.length-1][0], nodeArray[nodeArray.length-1][1], 1, 0);
+            if (greatMoves.length == 0 || nodeArray.length >= 6) 
+                nodeArray = [];
+        }
+    }
+}
+
+function addPosToArray(arr, x, y, xOff, yOff) {
+    console.log(isShipInPosArray(player.shipBoard, x, y), x >= 0, x <= 9, y >= 0,  y <= 9, !allPositions.every(pos => pos.toString() !== [x+xOff,y+yOff].toString()), x+xOff, y+yOff)
+    if (isShipInPosArray(player.shipBoard, x, y) && x >= 0 && x <= 9 && y >= 0 && y <= 9 && !allPositions.every(pos => pos.toString() !== [x+xOff,y+yOff].toString()))
+        arr.push([x+xOff,y+yOff]);
 }
 
 function init() {
     player = new Player([], []);
     createRandomBoard();
-    turn = 1;
+    turn = Math.floor(Math.random() * (2 - 1 + 1) + 1) === 1 ? 1 : -1;
     render();
 }
 
@@ -115,6 +187,7 @@ function createRandomBoard() {
             freePositions.push([x, y]);
         }
     }
+    allPositions = [...freePositions];
 
     // CREATE A SHIP BOARD AT RANDOM WITH NO SHIPS COLLIDING
     findShipsPositions(freePositions, shipBoard);
@@ -192,7 +265,8 @@ function isShipInArray(shipArr, posArr) {
 function isShipInPosArray(shipArr, x, y) {
     let inPos = false;
     shipArr.forEach(function(ship) {
-        inPos = isShipInPos(ship, x, y);
+        if (isShipInPos(ship, x, y))
+            inPos = true;
     });
     return inPos;
 }
@@ -219,6 +293,18 @@ function render() { // gridEl[Y].children[X]
             }
         });
     }
+    renderHits(computer.playerBoard, player.shipBoard);
+}
+
+function renderHits(playerBoard, shipBoard) {
+    playerBoard.forEach(pos => {
+        const elm = gridEl[pos[0]].children[pos[1]+1];
+        if (isShipInPosArray(shipBoard, pos[0], pos[1])) {
+            elm.style.background = 'green';
+        } else {
+            elm.style.background = 'red';
+        }
+    });
 }
 
 function renderShipBoard(shipBoard, color) {
