@@ -11,6 +11,7 @@ class Player extends Opponent {
         this.tempBoard = [];
         this.direction = 1;
         this.color = game.miss;
+        this.newInput = false;
     }
 }
 class Computer extends Opponent {

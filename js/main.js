@@ -1,25 +1,13 @@
 /*
             TODO
-    [] Update html #msg tag respectively
-    [] possibly add delay for computer decision
-    [] Check for win on either side
-    [X] game.'color' change to hits and misses
-    [] check if player has already placed in that grid
-    [] refactor code, there are so many improvements I can currently think of:
-     [X] create "player class", will reduce amount of "lets in app state variables"
-     [X] create "computer class", will also clear of some more lets in app state
-     [X] organize code to where functions that do certain things are in their place
-     [X] check for ";" on all lines.
-     [] Make sure that all "loops" are done to the best that they can, this will take the most time.
-     [] lable code for project presentation.
-
+    [] Make the AI a bit better
 
 */
 /*----- constants -----*/
 const game = {
     boardSize: 10,
-    hit: 'red',
-    miss: 'green',
+    hit: '#FF5733',
+    miss: '#0BC402',
     water: '#fff',
     shipAmount: 4, // Total ships
     '0': 5, // Destroyer size
@@ -38,12 +26,16 @@ let turn;
 const gridEl = document.querySelectorAll('tr.grid-parent');
 const gridContainerEl = document.querySelector('.grid-container');
 const playerBoardEls = document.querySelectorAll('tr.ship-parent');
+const msgEl = document.querySelector('#msg');
+const switchBtnEl = document.querySelector('.s-button > button');
+const replayBtnEl = document.querySelector('.r-button > button');
 
 /*----- event listeners -----*/
 gridContainerEl.addEventListener('click', handleClick);
 gridContainerEl.addEventListener('mouseover', handleMouseOver);
 gridContainerEl.addEventListener('mouseout', handleMouseOut);
-document.querySelector('button').addEventListener('click', (e) => player.direction === 1 ? player.direction = 0 : player.direction = 1);
+switchBtnEl.addEventListener('click', e => player.direction === 1 ? player.direction = 0 : player.direction = 1);
+replayBtnEl.addEventListener('click', init);
 
 /*----- functions -----*/
 init();
@@ -52,9 +44,11 @@ function init() {
     player = new Player([], []);
     createRandomBoard();
     turn = Math.floor(Math.random() * (2 - 1 + 1) + 1) === 1 ? 1 : -1;
+    resetBoard();
     render();
 }
 
+// CREATES RANDOM BOARD FOR COMPUTER
 function createRandomBoard() {
     const playerBoard = [];
     const shipBoard = [];
@@ -76,6 +70,7 @@ function createRandomBoard() {
     findShipsPositions(freePositions, shipBoard);
 }
 
+// FINDS RANDOM SHIP POSITIONS WITH DIFFERENT DIRECTIONS WHILE NOT COLLIDING
 function findShipsPositions(freePositions, shipBoard) {
     const randomDirection = Math.floor(Math.random() * (1+1));
     const min = 0;
@@ -114,13 +109,15 @@ function findShipsPositions(freePositions, shipBoard) {
         return findShipsPositions(freePositions, shipBoard);
 }
 
+// HANDLE RENDER FOR PLACING SHIPS
 function handleMouseOver(e) {
-    //TODO render where ship will be placed 
     if (e.target.id === '' || player.shipBoard.length >= 5) return;
     const posArr = e.target.id.split(',');
     const posX = parseInt(posArr[0]);
     const posY = parseInt(posArr[1]);
     player.tempBoard = [];
+
+    // ADD POSITION TO TEMP BOARD FOR RENDER
     for (let i = 0; i < game[player.shipBoard.length]; i++) {
         let posXOff = posX + (player.direction === 0 ? i : 0)
         let posYOff = posY + (player.direction === 1 ? i : 0)
@@ -136,41 +133,57 @@ function handleMouseOver(e) {
     render();
 }
 
+// HANDLE RENDER FOR PLACING SHIPS
 function handleMouseOut(e) {
     if (e.target.id === '' || player.shipBoard.length >= 5) return;
+    // REMOVE COLOR ON MOUSE OUT
     player.color = game.water;
     render();
 }
 
 function handleClick(e) {
-    if (e.target.id === '') return;
+    if (e.target.id === '' || isGameOver()) return;
     const posArr = e.target.id.split(',');
     const posX = parseInt(posArr[0]);
     const posY = parseInt(posArr[1]);
     if (player.shipBoard.length < 5) {
         // CALLS WHEN PLAYER NEEDS TO PLACE SHIPS
+
+        // CHECK IF ANOTHER SHIP IS INSIDE TEMP BOARD
         if (isShipInArray(player.shipBoard, player.tempBoard)) return;
+
+        // CHECK IF SHIP IS OFF BOARD
         if (posX + (player.direction === 0 ? game[player.shipBoard.length]-1 : 0) > 9 || posY + (player.direction === 1 ? game[player.shipBoard.length]-1 : 0) > 9) return;
+
+        // CREATE NEW SHIP AT POSITION
         const ship = new Ship(posX, posY, (player.direction === 0 ? game[player.shipBoard.length]-1 : 0), (player.direction === 1 ? game[player.shipBoard.length]-1 : 0));
         player.shipBoard.push(ship);
         player.color = game.hit;
         if (player.shipBoard.length >= 5) {
+            // BEGIN GAME
             player.tempBoard = [];
             handleNextMove();
         } else {
+            // REMOVE LAST POSITION TO UPDATE RENDER
             player.tempBoard.pop();
         }
         render();
         return;
     }
+
     // CALLS WHEN GAME BEGINS
     if (turn === 1) {
-        player.playerBoard.push([posX, posY]);
-        handleNextMove();
+        // CHECK IF PLAYER HAS ALREADY PLACED SHIP
+        if (player.playerBoard.every(pos => pos.toString() !== [posX, posY].toString())) {
+            player.playerBoard.push([posX, posY]);
+            handleNextMove();
+            player.newInput = true;
+        } 
     }
     render();
 }
 
+// CHANGE TURN AND HANDLE COMPUTER TURN
 function handleNextMove() {
     turn = turn * -1;
     if (turn === -1) {
@@ -180,55 +193,79 @@ function handleNextMove() {
         const max = positions.length-1;
         const posIndex = Math.floor(Math.random() * (max - min + 1) + min);
         let pos = positions[posIndex];
-        computer.playerBoard.push(pos);
+
+        // RUN AI
         handleGreatMoves(pos);
+
+        // REMOVE POSITION FROM ARRAYS
         computer.allPositions = computer.allPositions.filter(aPos => aPos.toString() !== pos.toString());
         computer.greatMoves = computer.greatMoves.filter(gPos => gPos.toString() !== pos.toString());
+
+        // NEXT TURN
         handleNextMove();
     } 
 }
 
 function handleGreatMoves(pos) {
-    // Keep moves random if no hit
+    // KEEP MOVES RANDOM IF NO HIT
     if (!isShipInPosArray(player.shipBoard, pos[0], pos[1]) && computer.greatMoves.length === 0) return;
 
-    // First index of 'hit' add initial great moves
+    //ADD HIT POSITION TO PLAYER BOARD
+    computer.playerBoard.push(pos);
+
+    // FIRST INDEX OF 'HIT' ADD INITIAL GREAT MOVES
     if (computer.nodeArray.length === 0) {
         addPosToArray(computer.greatMoves, pos[0], pos[1], 1, 0);
         addPosToArray(computer.greatMoves, pos[0], pos[1], -1, 0);
         addPosToArray(computer.greatMoves, pos[0], pos[1], 0, 1);
         addPosToArray(computer.greatMoves, pos[0], pos[1], 0, -1);
     }
-    // Push current pos to computer.nodeArray
+    // PSH CURRENT POS TO COMPUTER.NODEARRAY
     computer.nodeArray.push(pos);
 
-    // Once node has 2 items, begin comparasin
+    // ONCE NODE HAS 2 ITEMS, BEGIN COMPARING
     if (computer.nodeArray.length > 1) {
+        // CHECK DIRECTION, X OR Y
         const nodeDirX = computer.nodeArray[computer.nodeArray.length-1][0] - computer.nodeArray[0][0];
         const nodeDirection = (nodeDirX === 0 ? 0 : 1);
         if (nodeDirection === 0) {
             computer.nodeArray = computer.nodeArray.sort((a,b) =>  a[1] - b[1]);
             computer.greatMoves = [];
+
+            // ADD POSITION TO GREAT MOVES -1 Y FROM NODEARRAY
             addPosToArray(computer.greatMoves, computer.nodeArray[0][0], computer.nodeArray[0][1], 0, -1);
+
+            // ADD POSITION TO GREAT MOVES +1 Y FROM NODEARRAY
             addPosToArray(computer.greatMoves, computer.nodeArray[computer.nodeArray.length-1][0], computer.nodeArray[computer.nodeArray.length-1][1], 0, 1);
+
+            // RESET IF CAN'T FIND OR SHIP IS DESTROYED
             if (computer.greatMoves.length == 0 || computer.nodeArray.length >= 6) 
                 computer.nodeArray = [];
         } else {
             computer.nodeArray = computer.nodeArray.sort((a,b) => a[0] - b[0]);
             computer.greatMoves = [];
+            // ADD POSITION TO GREAT MOVES -1 X FROM NODEARRAY
             addPosToArray(computer.greatMoves, computer.nodeArray[0][0], computer.nodeArray[0][1], -1, 0);
+
+            // ADD POSITION TO GREAT MOVES +1 X FROM NODEARRAY
             addPosToArray(computer.greatMoves, computer.nodeArray[computer.nodeArray.length-1][0], computer.nodeArray[computer.nodeArray.length-1][1], 1, 0);
+
+            // RESET IF CAN'T FIND OR SHIP IS DESTROYED
             if (computer.greatMoves.length == 0 || computer.nodeArray.length >= 6) 
                 computer.nodeArray = [];
         }
     }
 }
 
+function isGameOver() {
+    return player.shipBoard.length >= 5 && (isShipsInArray(computer.shipBoard, player.playerBoard) || isShipsInArray(player.shipBoard, computer.playerBoard));
+}
+
 // CHECK IF SHIP IS INSIDE POSITION ARRAY
 function isShipInArray(shipArr, posArr) {
     let inPos = false;
-    shipArr.forEach(function(ship) {
-        posArr.forEach(function(pos) {
+    shipArr.forEach(ship => {
+        posArr.forEach(pos => {
             if (isShipInPos(ship, pos[0], pos[1])) {
                 inPos = true;
             }
@@ -237,10 +274,19 @@ function isShipInArray(shipArr, posArr) {
     return inPos;
 }
 
+// CHECK IF ALL SHIPS ARE IN POSITIONS
+function isShipsInArray(shipArr, posArr) {
+    // LOOP THROUGH ALL SHIPS, CHECK IF ALL SHIPS HAVE BEEN HIT
+    const mapArr = posArr.map(pos => pos.toString());
+    let inPos = false;
+    inPos = shipArr.every(ship => ship.pos.every(pos => mapArr.includes(pos.toString())));
+    return inPos;
+}
+
 // CHECK IF ANY SHIP IN ARRAY COLLIDES WITH POSITION
 function isShipInPosArray(shipArr, x, y) {
     let inPos = false;
-    shipArr.forEach(function(ship) {
+    shipArr.forEach(ship => {
         if (isShipInPos(ship, x, y))
             inPos = true;
     });
@@ -249,13 +295,13 @@ function isShipInPosArray(shipArr, x, y) {
 
 // CHECK IF SHIP COLLIDES WITH POSITION
 function isShipInPos(ship, x, y) {
-    return ship.pos.some((pos) => (pos[0] === x) && (pos[1] === y));
+    return ship.pos.some(pos => (pos[0] === x) && (pos[1] === y));
 }
 
 // GET INDEX OF SHIP IN SHIPBOARD AT X, Y
 function getShipIndex(shipBoard, x, y) {
     let index = -1;
-    shipBoard.forEach(function(ship, idx) {
+    shipBoard.forEach((ship, idx) => {
         const mapBoard = ship.pos.map(pos => pos.toString());
         if (mapBoard.includes([x,y].toString())) {
             index = idx;
@@ -278,12 +324,46 @@ function addPosToArray(arr, x, y, xOff, yOff) {
 }
 
 function render() {
+    renderMessageContents();
+
+    // DISPLAY / HIDE REPLAY BUTTON
+    isGameOver() ? replayBtnEl.style.opacity = '1' : replayBtnEl.style.opacity = '0';
+
+    renderTempBoard();
+    renderHits(player.playerBoard, computer.shipBoard);
+    renderPlayerShips(player.shipBoard);
+    renderComputerHits(computer.playerBoard, player.shipBoard);
+}
+
+function renderMessageContents() {
+    if (player.shipBoard.length < 5) {
+        switchBtnEl.style.opacity = '1';
+        msgEl.textContent = "Place your ships!";
+    } else {
+        switchBtnEl.style.opacity = '0';
+        msgEl.textContent = "Attack the opponent!";
+        if (!player.newInput) {
+            msgEl.textContent = "Pick an unused position!"
+        }
+        player.newInput = false;
+        if (isShipsInArray(computer.shipBoard, player.playerBoard)) {
+            msgEl.textContent = "You have won!"
+        } else if (isShipsInArray(player.shipBoard, computer.playerBoard)) {
+            msgEl.textContent = "The opponent has won!"
+        }
+    }
+}
+
+function renderTempBoard() {
+    // REMOVE TEMP BOARD
     if (player.playerBoard.length === 0 && computer.playerBoard.length === 0) {
         renderShipBoard(player.shipBoard, game.water);
     }
+
+    // RENDER TEMP BAORD
     if (player.shipBoard.length < 5) {
         renderShipBoard(player.shipBoard, game.miss);
-        player.tempBoard.forEach(function(pos) {
+        player.tempBoard.forEach(pos => {
             if (pos !== null) {
                 const elmParent = gridEl[pos[0]];
                 if (elmParent!== undefined) {
@@ -294,12 +374,24 @@ function render() {
             }
         });
     }
-    renderHits(player.playerBoard, computer.shipBoard);
-    renderPlayerShips(player.shipBoard);
-    renderComputerHits(computer.playerBoard, player.shipBoard);
+}
 
-    // RENDER COMPUTER BOARD
-    //renderShipBoard(computer.shipBoard, game.miss);
+// RESET BOARD TO DEFAULT COLORS
+function resetBoard() {
+    for (row of gridEl) {
+        for (grid of row.children) {
+            if (grid.id !== '') {
+                grid.style.backgroundColor = game.water;
+            }
+        }
+    }
+    for (row of playerBoardEls) {
+        for (ship of row.children) {
+            if(ship.classList.length === 2) {
+                ship.style.background = 'rgb(228, 148, 0)';
+            }
+        }
+    }
 }
 
 //RENDER PLAYER SHIP BOARD TO COLOR
@@ -316,7 +408,7 @@ function renderPlayerShips(shipBoard) {
 
 // RENDER COMPUTER HITS ON PLAYER 'SHIP BOARD'
 function renderComputerHits(playerBoard, shipBoard) {
-    playerBoard.forEach(function(pos) {
+    playerBoard.forEach(pos => {
         if (isShipInPosArray(shipBoard, pos[0], pos[1])) {
             let shipIndex = getShipIndex(shipBoard, pos[0], pos[1]);
             let posIndex = getPosIndex(shipBoard[shipIndex], pos[0], pos[1]);
@@ -340,35 +432,10 @@ function renderHits(playerBoard, shipBoard) {
 
 // RENDER SHIPS AT POS TO COLOR
 function renderShipBoard(shipBoard, color) {
-    shipBoard.forEach(function(ship) {
-        ship.pos.forEach(function(pos) {
+    shipBoard.forEach(ship => {
+        ship.pos.forEach(pos => {
             const elm = gridEl[pos[0]].children[pos[1]+1];
             elm.style.background = color;
         });
     });
 }
-/*
-PSEDO CODE
-render function:
-    loop through the board of player hits, change colors respectively
-    loop through the board of comp hits, change colors respectively
-    id for grid can be id="posX,posY"
-
-win logic:
-    loop through all the arrays at the turn of the player to see if all ships have been destroyed
-
-[X] - AI logic:
-    this is going to be the difficult part. The computer will randomly pick a square between the grid until it hits.
-    the hits will then be added to a "great moves" array where it'll act like a node that the computer can now use to "look" for other possible hits.
-    in battleship you can only put ships verticle and horizontal so once a ship hits the AI will start looking for verticle and horizontal positions.
-    if the AI hits again vertically, it'll now know that the ship is verticle.
-    once that ship is destroyed, the positions will be removed from the "great moves" array and the computer will go back to being random, repeat.
-    example: computer.greatMoves['2,1', '2,2', '1,1'...]
-
-Possible features:
-    I believe this will mostly be UI stuff
-        [X] When picking ships it'll show you orientation and position they will be placed at
-        [] Possibility to actually show ships once destroyed <--- I really want to do this I am just unsure of how yet
-        [] If I can figure it out, make the ships draggable
-
-*/

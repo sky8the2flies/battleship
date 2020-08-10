@@ -7,7 +7,7 @@ body {
     margin: 0;
     font-family: Helvetica;
     grid-template-columns: 3fr 2fr;
-    grid-template-rows: 50px 1fr 4fr 1fr;
+    grid-template-rows: 50px 15vmin 4fr 1fr;
 }
 
 header {
@@ -40,32 +40,44 @@ table.grid-container {
 table.table-board {
     margin: 50px auto;
     margin-top: 0px;
-    border: 1px solid #333;
-    border-collapse: collapse; /* */
+    border-collapse: collapse; 
     height: 2fr;
     width: 2fr;
     text-align: center;
 }
 
 table.grid-container{
+    grid-row: 3/4;
     background-color: rgb(228, 148, 0);
 }
 
 table.ship-container {
     grid-column: 2/3;
+    grid-row: 3/4;
     border-collapse: separate;
     border-spacing: 2px 5px; 
     border: hidden;
 }
 
-.s-button {
+.s-button > button{
     margin-top: 40px;
     background-color: rgb(231, 150, 0);
+    font-weight: bold;
+    opacity: 1;
+}
+.r-button {
+    display: flex;
+    flex-direction: column;
+    grid-row: 3/4;
+    grid-column: 1/2;
+    justify-self: center;
+    align-self: flex-end;
 }
 
-table.ship-container > tr, table.ship-container > tr > td{
-    border: 1px solid black;
-    border-right: hidden;
+.r-button > button {
+    background-color: rgb(231, 150, 0);
+    font-weight: bold;
+    opacity: 1;
 }
 
 .player-ship-board {
