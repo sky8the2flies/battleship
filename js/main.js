@@ -327,7 +327,11 @@ function render() {
     renderMessageContents();
 
     // DISPLAY / HIDE REPLAY BUTTON
-    isGameOver() ? replayBtnEl.style.opacity = '1' : replayBtnEl.style.opacity = '0';
+    isGameOver() ? replayBtnEl.style.display = 'block' : replayBtnEl.style.display = 'none';
+
+    if (player.playerBoard.length === 0 && computer.playerBoard.length === 0) {
+        renderShipBoard(player.shipBoard, 'white');
+    }
 
     renderTempBoard();
     renderHits(player.playerBoard, computer.shipBoard);
@@ -337,10 +341,10 @@ function render() {
 
 function renderMessageContents() {
     if (player.shipBoard.length < 5) {
-        switchBtnEl.style.opacity = '1';
+        switchBtnEl.style.display = 'block';
         msgEl.textContent = "Place your ships!";
     } else {
-        switchBtnEl.style.opacity = '0';
+        switchBtnEl.style.display = 'none';
         msgEl.textContent = "Attack the opponent!";
         if (!player.newInput) {
             msgEl.textContent = "Pick an unused position!"
