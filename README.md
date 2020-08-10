@@ -1,11 +1,12 @@
 # **Battleship**
 This is battleship, where you play agains a computer fighting to control the waters.
 ## Table of contents:
-- [Technologies](#Technologies)
-- [Getting Started](#Getting)
+- [Images](#Images)
+- [Technologies](#Technologies-used)
+- [Getting Started](#Getting-Started)
 - [Rules](#Rules)
 - [Play](#Play)
-- [Autho](#Author)
+- [Author](#Author)
 
 ## Images
 ![Game Image](#)
