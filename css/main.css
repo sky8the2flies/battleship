@@ -8,6 +8,7 @@ body {
     display: grid;
     font-family: Helvetica;
     width: 100%;
+    background-image: url(/imgs/Water.jpg);
     grid-template-columns: 1fr;
     grid-template-rows: 50px auto auto auto auto auto;
     grid-template-areas:
@@ -39,12 +40,14 @@ header h1 {
     text-align: center;
     font-size: 20px;
     padding: 5px;
+    color: orange;
 }
 
 #ship-text {
     grid-area: ship-text;
     text-align: center;
     font-size: 15px;
+    color: orange;
 }
 
 .grid-container {
@@ -55,6 +58,7 @@ header h1 {
 .computer-container {
     display: none;
     grid-area: computer-board;
+    background-color: rgb(228, 148, 0);
 }
 
 table.table-board {
@@ -74,6 +78,11 @@ td.table-board {
 
 tr.table-board:nth-child(odd) td.grid-board:nth-child(even),
 tr.table-board:nth-child(even) td.grid-board:nth-child(odd) {
+    background-color: orange;
+} 
+
+tr.table-board:nth-child(odd) td.computer-board:nth-child(even),
+tr.table-board:nth-child(even) td.computer-board:nth-child(odd) {
     background-color: orange;
 } 
 
@@ -144,7 +153,7 @@ td.player-board {
     background-color: gray;
 }
 
-@media only screen and (min-width: 600px) {
+@media only screen and (min-width: 620px) {
     body {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -154,6 +163,10 @@ td.player-board {
         "msg ship-text"
         "board computer-board"
         "button button";
+    }
+    td.table-board {
+        width: 28px; 
+        height: 28px;
     }
 
     .computer-container {

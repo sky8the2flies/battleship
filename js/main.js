@@ -8,7 +8,7 @@ const game = {
     boardSize: 10,
     hit: '#FF5733',
     miss: '#0BC402',
-    water: '#fff',
+    water: '#9dc1fc',
     shipAmount: 4, // Total ships
     '0': 5, // Destroyer size
     '1': 4, // Submarine size
@@ -330,7 +330,7 @@ function render() {
     isGameOver() ? replayBtnEl.style.display = 'block' : replayBtnEl.style.display = 'none';
 
     if (player.shipBoard.length >= 5 && player.playerBoard.length === 0) {
-        renderShipBoard(player.shipBoard, 'white');
+        renderShipBoard(player.shipBoard, game.water);
     }
 
     renderTempBoard();
@@ -374,7 +374,7 @@ function renderTempBoard() {
                 if (elmParent!== undefined) {
                     const elm = elmParent.children[pos[1]+1];
                     if (elm !== undefined)
-                        elm.style.background = player.color;
+                        elm.style.backgroundColor = player.color;
                 }
             }
         });
@@ -400,7 +400,7 @@ function resetBoards() {
     for (row of playerBoardEls) {
         for (ship of row.children) {
             if(ship.classList.length === 2) {
-                ship.style.background = 'rgb(228, 148, 0)';
+                ship.style.backgroundColor = 'rgb(228, 148, 0)';
             }
         }
     }
@@ -414,7 +414,7 @@ function renderPlayerShips(shipBoard) {
             let shipIndex = getShipIndex(shipBoard, pos[0], pos[1]);
             let posIndex = getPosIndex(shipBoard[shipIndex], pos[0], pos[1]);
             const shipEl = playerBoardEls[shipIndex].children[posIndex];
-            shipEl.style.background = game.miss;
+            shipEl.style.backgroundColor = game.miss;
         });
     });
 }
@@ -426,7 +426,7 @@ function renderComputerHits(playerBoard, shipBoard) {
             let shipIndex = getShipIndex(shipBoard, pos[0], pos[1]);
             let posIndex = getPosIndex(shipBoard[shipIndex], pos[0], pos[1]);
             const shipEl = playerBoardEls[shipIndex].children[posIndex];
-            shipEl.style.background = game.hit;
+            shipEl.style.backgroundColor = game.hit;
         } 
     });
 }
@@ -436,9 +436,9 @@ function renderHits(playerBoard, shipBoard, domEl) {
     playerBoard.forEach(pos => {
         const elm = domEl[pos[0]].children[pos[1]+1];
         if (isShipInPosArray(shipBoard, pos[0], pos[1])) {
-            elm.style.background = game.miss;
+            elm.style.backgroundColor = game.miss;
         } else {
-            elm.style.background = game.hit;
+            elm.style.backgroundColor = game.hit;
         }
     });
 }
@@ -448,7 +448,7 @@ function renderShipBoard(shipBoard, color) {
     shipBoard.forEach(ship => {
         ship.pos.forEach(pos => {
             const elm = gridEl[pos[0]].children[pos[1]+1];
-            elm.style.background = color;
+            elm.style.backgroundColor = color;
         });
     });
 }
