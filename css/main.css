@@ -49,6 +49,12 @@ header h1 {
 
 .grid-container {
     grid-area: board;
+    background-color: rgb(228, 148, 0);
+}
+
+.computer-container {
+    display: none;
+    grid-area: computer-board;
 }
 
 table.table-board {
@@ -71,10 +77,6 @@ tr.table-board:nth-child(even) td.grid-board:nth-child(odd) {
     background-color: orange;
 } 
 
-table.grid-container{
-    background-color: rgb(228, 148, 0);
-}
-
 .ship-container {
     grid-area: ship-board;
     border-collapse: separate;
@@ -87,10 +89,10 @@ table.grid-container{
 }
 
 table.player-board {
+    display: block;
     margin: 5px auto 0px;
     border-collapse: collapse; 
     text-align: center;
-    border: 2px solid black;
 }
 
 td.player-board {
@@ -142,47 +144,35 @@ td.player-board {
     background-color: gray;
 }
 
-@media only screen and (min-width: 800px) {
+@media only screen and (min-width: 600px) {
     body {
         display: grid;
-        grid-template-columns: 2fr 1fr 100px;
+        grid-template-columns: 1fr 1fr;
         grid-template-rows: 50px auto auto auto;
         grid-template-areas:
-        "header header header"
-        "msg ship-text log"
-        "board ship-board log"
-        "button button log";
+        "header header"
+        "msg ship-text"
+        "board computer-board"
+        "button button";
+    }
+
+    .computer-container {
+        display: block;
     }
 
     #ship-text {
         font-size: 20px;
-    }
-
-    .log {
-        grid-area: log;
-        text-align: center;
-    }
-    
-    td.table-board {
-        width: 35px; 
-        height: 35px;
+        padding: 5px;
     }
 
     table.player-board {
-        position: relative;
-        top: -10px;
-        border-collapse: separate;
-        border-spacing: 0px 10px;
-        border: none;
+        display: none;
     }
-    
-    td.player-board {
+}
+
+@media only screen and (min-width: 800px) {
+    td.table-board {
         width: 35px; 
         height: 35px;
-        border-right: none;
-    }
-
-    td.player-board:nth-last-child(1) {
-        border-right: 2px solid black;
     }
 }

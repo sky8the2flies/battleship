@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battleship</title>
+    <title>Battleship: The Game</title>
     <link rel="stylesheet" href="css/main.css">
     <script defer src="js/Opponent.js"></script>
     <script defer src="js/Ship.js"></script>
@@ -16,10 +16,9 @@
     <div class="s-button"><button>SWITCH DIRECTION</button></div>
     <div class="r-button"><button>REPLAY</button></div>
     <h2 id="msg">Place your ships!</h2>
-    <h4 class="log">LOG:</h4>
-
+    <h2 id="ship-text">Computer hits</h2>
     <table class="grid-container table-board">
-        <tr class="table-board">
+        <tr class="grid-board table-board">
             <td class="grid-board table-board"></td>
             <td class="grid-board table-board">1</td>
             <td class="grid-board table-board">2</td>
@@ -33,7 +32,7 @@
             <td class="grid-board table-board">10</td>
         </tr>
         <tr class="grid-parent table-board">
-            <td class="table-board">A</td>
+            <td class="grid-board table-board">A</td>
             <td id="0,0"class="ship-board table-board"></td>
             <td id="0,1"class="ship-board table-board"></td>
             <td id="0,2"class="ship-board table-board"></td>
@@ -163,7 +162,151 @@
             <td id="9,9"class="ship-board table-board"></td>
         </tr>
     </table>
-    <h2 id="ship-text">Ship board</h2>
+    <table class="computer-container table-board">
+        <tr class="table-board">
+            <td class="computer-board table-board"></td>
+            <td class="computer-board table-board">1</td>
+            <td class="computer-board table-board">2</td>
+            <td class="computer-board table-board">3</td>
+            <td class="computer-board table-board">4</td>
+            <td class="computer-board table-board">5</td>
+            <td class="computer-board table-board">6</td>
+            <td class="computer-board table-board">7</td>
+            <td class="computer-board table-board">8</td>
+            <td class="computer-board table-board">9</td>
+            <td class="computer-board table-board">10</td>
+        </tr>
+        <tr class="computer-parent table-board">
+            <td class="table-board">A</td>
+            <td id="0,0"class="ship-board table-board"></td>
+            <td id="0,1"class="ship-board table-board"></td>
+            <td id="0,2"class="ship-board table-board"></td>
+            <td id="0,3"class="ship-board table-board"></td>
+            <td id="0,4"class="ship-board table-board"></td>
+            <td id="0,5"class="ship-board table-board"></td>
+            <td id="0,6"class="ship-board table-board"></td>
+            <td id="0,7"class="ship-board table-board"></td>
+            <td id="0,8"class="ship-board table-board"></td>
+            <td id="0,9"class="ship-board table-board"></td>
+        </tr>
+        <tr class="computer-parent table-board">
+            <td class="computer-board table-board">B</td>
+            <td id="1,0"class="ship-board table-board"></td>
+            <td id="1,1"class="ship-board table-board"></td>
+            <td id="1,2"class="ship-board table-board"></td>
+            <td id="1,3"class="ship-board table-board"></td>
+            <td id="1,4"class="ship-board table-board"></td>
+            <td id="1,5"class="ship-board table-board"></td>
+            <td id="1,6"class="ship-board table-board"></td>
+            <td id="1,7"class="ship-board table-board"></td>
+            <td id="1,8"class="ship-board table-board"></td>
+            <td id="1,9"class="ship-board table-board"></td>
+        </tr>
+        <tr class="computer-parent table-board">
+            <td class="computer-board table-board">C</td>
+            <td id="2,0"class="ship-board table-board"></td>
+            <td id="2,1"class="ship-board table-board"></td>
+            <td id="2,2"class="ship-board table-board"></td>
+            <td id="2,3"class="ship-board table-board"></td>
+            <td id="2,4"class="ship-board table-board"></td>
+            <td id="2,5"class="ship-board table-board"></td>
+            <td id="2,6"class="ship-board table-board"></td>
+            <td id="2,7"class="ship-board table-board"></td>
+            <td id="2,8"class="ship-board table-board"></td>
+            <td id="2,9"class="ship-board table-board"></td>
+        </tr>
+        <tr class="computer-parent table-board">
+            <td class="computer-board table-board">D</td>
+            <td id="3,0"class="ship-board table-board"></td>
+            <td id="3,1"class="ship-board table-board"></td>
+            <td id="3,2"class="ship-board table-board"></td>
+            <td id="3,3"class="ship-board table-board"></td>
+            <td id="3,4"class="ship-board table-board"></td>
+            <td id="3,5"class="ship-board table-board"></td>
+            <td id="3,6"class="ship-board table-board"></td>
+            <td id="3,7"class="ship-board table-board"></td>
+            <td id="3,8"class="ship-board table-board"></td>
+            <td id="3,9"class="ship-board table-board"></td>
+        </tr>
+        <tr class="computer-parent table-board">
+            <td class="computer-board table-board">E</td>
+            <td id="4,0"class="ship-board table-board"></td>
+            <td id="4,1"class="ship-board table-board"></td>
+            <td id="4,2"class="ship-board table-board"></td>
+            <td id="4,3"class="ship-board table-board"></td>
+            <td id="4,4"class="ship-board table-board"></td>
+            <td id="4,5"class="ship-board table-board"></td>
+            <td id="4,6"class="ship-board table-board"></td>
+            <td id="4,7"class="ship-board table-board"></td>
+            <td id="4,8"class="ship-board table-board"></td>
+            <td id="4,9"class="ship-board table-board"></td>
+        </tr>
+        <tr class="computer-parent table-board">
+            <td class="computer-board table-board">F</td>
+            <td id="5,0"class="ship-board table-board"></td>
+            <td id="5,1"class="ship-board table-board"></td>
+            <td id="5,2"class="ship-board table-board"></td>
+            <td id="5,3"class="ship-board table-board"></td>
+            <td id="5,4"class="ship-board table-board"></td>
+            <td id="5,5"class="ship-board table-board"></td>
+            <td id="5,6"class="ship-board table-board"></td>
+            <td id="5,7"class="ship-board table-board"></td>
+            <td id="5,8"class="ship-board table-board"></td>
+            <td id="5,9"class="ship-board table-board"></td>
+        </tr>
+        <tr class="computer-parent table-board">
+            <td class="computer-board computer-board table-board">G</td>
+            <td id="6,0"class="ship-board table-board"></td>
+            <td id="6,1"class="ship-board table-board"></td>
+            <td id="6,2"class="ship-board table-board"></td>
+            <td id="6,3"class="ship-board table-board"></td>
+            <td id="6,4"class="ship-board table-board"></td>
+            <td id="6,5"class="ship-board table-board"></td>
+            <td id="6,6"class="ship-board table-board"></td>
+            <td id="6,7"class="ship-board table-board"></td>
+            <td id="6,8"class="ship-board table-board"></td>
+            <td id="6,9"class="ship-board table-board"></td>
+        </tr>
+        <tr class="computer-parent table-board">
+            <td class="computer-board table-board">H</td>
+            <td id="7,0"class="ship-board table-board"></td>
+            <td id="7,1"class="ship-board table-board"></td>
+            <td id="7,2"class="ship-board table-board"></td>
+            <td id="7,3"class="ship-board table-board"></td>
+            <td id="7,4"class="ship-board table-board"></td>
+            <td id="7,5"class="ship-board table-board"></td>
+            <td id="7,6"class="ship-board table-board"></td>
+            <td id="7,7"class="ship-board table-board"></td>
+            <td id="7,8"class="ship-board table-board"></td>
+            <td id="7,9"class="ship-board table-board"></td>
+        </tr>
+        <tr class="computer-parent table-board">
+            <td class="computer-board table-board">I</td>
+            <td id="8,0"class="ship-board table-board"></td>
+            <td id="8,1"class="ship-board table-board"></td>
+            <td id="8,2"class="ship-board table-board"></td>
+            <td id="8,3"class="ship-board table-board"></td>
+            <td id="8,4"class="ship-board table-board"></td>
+            <td id="8,5"class="ship-board table-board"></td>
+            <td id="8,6"class="ship-board table-board"></td>
+            <td id="8,7"class="ship-board table-board"></td>
+            <td id="8,8"class="ship-board table-board"></td>
+            <td id="8,9"class="ship-board table-board"></td>
+        </tr>
+        <tr class="computer-parent table-board">
+            <td class="computer-board table-board">J</td>
+            <td id="9,0"class="ship-board table-board"></td>
+            <td id="9,1"class="ship-board table-board"></td>
+            <td id="9,2"class="ship-board table-board"></td>
+            <td id="9,3"class="ship-board table-board"></td>
+            <td id="9,4"class="ship-board table-board"></td>
+            <td id="9,5"class="ship-board table-board"></td>
+            <td id="9,6"class="ship-board table-board"></td>
+            <td id="9,7"class="ship-board table-board"></td>
+            <td id="9,8"class="ship-board table-board"></td>
+            <td id="9,9"class="ship-board table-board"></td>
+        </tr>
+    </table>
     <table class="ship-container player-board">
         <tr class="ship-parent player-board">
             <td class="player-ship-board player-board"></td>
