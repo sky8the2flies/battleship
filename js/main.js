@@ -24,6 +24,7 @@ let turn;
 
 /*----- cached element references -----*/
 const gridEl = document.querySelectorAll('tr.grid-parent');
+const computerBoardEls = document.querySelectorAll('tr.computer-parent');
 const gridContainerEl = document.querySelector('.grid-container');
 const playerBoardEls = document.querySelectorAll('tr.ship-parent');
 const msgEl = document.querySelector('#msg');
@@ -44,7 +45,7 @@ function init() {
     player = new Player([], []);
     createRandomBoard();
     turn = Math.floor(Math.random() * (2 - 1 + 1) + 1) === 1 ? 1 : -1;
-    resetBoard();
+    resetBoards();
     render();
 }
 
@@ -194,6 +195,9 @@ function handleNextMove() {
         const posIndex = Math.floor(Math.random() * (max - min + 1) + min);
         let pos = positions[posIndex];
 
+        //ADD POSITION TO PLAYER BOARD
+        computer.playerBoard.push(pos);
+
         // RUN AI
         handleGreatMoves(pos);
 
@@ -207,11 +211,11 @@ function handleNextMove() {
 }
 
 function handleGreatMoves(pos) {
+    // RESET IF CAN'T FIND OR SHIP IS DESTROYED
+    if (computer.greatMoves.length === 0 || computer.nodeArray.length >= 6) 
+        computer.nodeArray = [];
     // KEEP MOVES RANDOM IF NO HIT
     if (!isShipInPosArray(player.shipBoard, pos[0], pos[1]) && computer.greatMoves.length === 0) return;
-
-    //ADD HIT POSITION TO PLAYER BOARD
-    computer.playerBoard.push(pos);
 
     // FIRST INDEX OF 'HIT' ADD INITIAL GREAT MOVES
     if (computer.nodeArray.length === 0) {
@@ -220,8 +224,9 @@ function handleGreatMoves(pos) {
         addPosToArray(computer.greatMoves, pos[0], pos[1], 0, 1);
         addPosToArray(computer.greatMoves, pos[0], pos[1], 0, -1);
     }
-    // PSH CURRENT POS TO COMPUTER.NODEARRAY
-    computer.nodeArray.push(pos);
+    // PUSH CURRENT POS TO COMPUTER.NODEARRAY
+    if (isShipInPosArray(player.shipBoard, pos[0], pos[1]))
+        computer.nodeArray.push(pos);
 
     // ONCE NODE HAS 2 ITEMS, BEGIN COMPARING
     if (computer.nodeArray.length > 1) {
@@ -237,9 +242,8 @@ function handleGreatMoves(pos) {
 
             // ADD POSITION TO GREAT MOVES +1 Y FROM NODEARRAY
             addPosToArray(computer.greatMoves, computer.nodeArray[computer.nodeArray.length-1][0], computer.nodeArray[computer.nodeArray.length-1][1], 0, 1);
-
             // RESET IF CAN'T FIND OR SHIP IS DESTROYED
-            if (computer.greatMoves.length == 0 || computer.nodeArray.length >= 6) 
+            if (computer.greatMoves.length === 0 || computer.nodeArray.length >= 6) 
                 computer.nodeArray = [];
         } else {
             computer.nodeArray = computer.nodeArray.sort((a,b) => a[0] - b[0]);
@@ -249,11 +253,14 @@ function handleGreatMoves(pos) {
 
             // ADD POSITION TO GREAT MOVES +1 X FROM NODEARRAY
             addPosToArray(computer.greatMoves, computer.nodeArray[computer.nodeArray.length-1][0], computer.nodeArray[computer.nodeArray.length-1][1], 1, 0);
-
-            // RESET IF CAN'T FIND OR SHIP IS DESTROYED
-            if (computer.greatMoves.length == 0 || computer.nodeArray.length >= 6) 
-                computer.nodeArray = [];
         }
+    }
+}
+
+// CHECK IF POS CAN BE ADDED TO GREATMOVES ARRAY
+function addPosToArray(arr, x, y, xOff, yOff) {
+    if (isShipInPosArray(player.shipBoard, x, y) && x >= 0 && x <= 9 && y >= 0 && y <= 9 && !computer.allPositions.every(pos => pos.toString() !== [x+xOff,y+yOff].toString())) {
+        arr.push([x+xOff,y+yOff]);
     }
 }
 
@@ -316,26 +323,20 @@ function getPosIndex(ship, x, y) {
     return mapBoard.indexOf([x,y].toString());
 }
 
-// CHECK IF POS CAN BE ADDED TO GREATMOVES ARRAY
-function addPosToArray(arr, x, y, xOff, yOff) {
-    if (isShipInPosArray(player.shipBoard, x, y) && x >= 0 && x <= 9 && y >= 0 && y <= 9 && !computer.allPositions.every(pos => pos.toString() !== [x+xOff,y+yOff].toString())) {
-        arr.push([x+xOff,y+yOff]);
-    }
-}
-
 function render() {
     renderMessageContents();
 
     // DISPLAY / HIDE REPLAY BUTTON
     isGameOver() ? replayBtnEl.style.display = 'block' : replayBtnEl.style.display = 'none';
 
-    if (player.playerBoard.length === 0 && computer.playerBoard.length === 0) {
+    if (player.shipBoard.length >= 5 && player.playerBoard.length === 0) {
         renderShipBoard(player.shipBoard, 'white');
     }
 
     renderTempBoard();
-    renderHits(player.playerBoard, computer.shipBoard);
+    renderHits(player.playerBoard, computer.shipBoard, gridEl);
     renderPlayerShips(player.shipBoard);
+    renderHits(computer.playerBoard, player.shipBoard, computerBoardEls);
     renderComputerHits(computer.playerBoard, player.shipBoard);
 }
 
@@ -381,8 +382,15 @@ function renderTempBoard() {
 }
 
 // RESET BOARD TO DEFAULT COLORS
-function resetBoard() {
+function resetBoards() {
     for (row of gridEl) {
+        for (grid of row.children) {
+            if (grid.id !== '') {
+                grid.style.backgroundColor = game.water;
+            }
+        }
+    }
+    for (row of computerBoardEls) {
         for (grid of row.children) {
             if (grid.id !== '') {
                 grid.style.backgroundColor = game.water;
@@ -396,6 +404,7 @@ function resetBoard() {
             }
         }
     }
+    
 }
 
 //RENDER PLAYER SHIP BOARD TO COLOR
@@ -423,9 +432,9 @@ function renderComputerHits(playerBoard, shipBoard) {
 }
 
 // RENDER HITS FROM PLAYERBOARD USING SHIPBOARD
-function renderHits(playerBoard, shipBoard) {
+function renderHits(playerBoard, shipBoard, domEl) {
     playerBoard.forEach(pos => {
-        const elm = gridEl[pos[0]].children[pos[1]+1];
+        const elm = domEl[pos[0]].children[pos[1]+1];
         if (isShipInPosArray(shipBoard, pos[0], pos[1])) {
             elm.style.background = game.miss;
         } else {
