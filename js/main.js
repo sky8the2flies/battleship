@@ -330,7 +330,7 @@ function render() {
     isGameOver() ? replayBtnEl.style.display = 'block' : replayBtnEl.style.display = 'none';
 
     if (player.shipBoard.length >= 5 && player.playerBoard.length === 0) {
-        renderShipBoard(player.shipBoard, game.water);
+        renderShipBoard(player.shipBoard, game.water, 0.8);
     }
 
     renderTempBoard();
@@ -362,12 +362,12 @@ function renderMessageContents() {
 function renderTempBoard() {
     // REMOVE TEMP BOARD
     if (player.playerBoard.length === 0 && computer.playerBoard.length === 0) {
-        renderShipBoard(player.shipBoard, game.water);
+        renderShipBoard(player.shipBoard, game.water, 0.8);
     }
 
     // RENDER TEMP BAORD
     if (player.shipBoard.length < 5) {
-        renderShipBoard(player.shipBoard, game.miss);
+        renderShipBoard(player.shipBoard, game.miss, 1);
         player.tempBoard.forEach(pos => {
             if (pos !== null) {
                 const elmParent = gridEl[pos[0]];
@@ -387,6 +387,7 @@ function resetBoards() {
         for (grid of row.children) {
             if (grid.id !== '') {
                 grid.style.backgroundColor = game.water;
+                grid.style.opacity = '0.8';
             }
         }
     }
@@ -394,6 +395,7 @@ function resetBoards() {
         for (grid of row.children) {
             if (grid.id !== '') {
                 grid.style.backgroundColor = game.water;
+                grid.style.opacity = '0.8';
             }
         }
     }
@@ -437,6 +439,7 @@ function renderHits(playerBoard, shipBoard, domEl) {
         const elm = domEl[pos[0]].children[pos[1]+1];
         if (isShipInPosArray(shipBoard, pos[0], pos[1])) {
             elm.style.backgroundColor = game.miss;
+            elm.style.opacity = '1';
         } else {
             elm.style.backgroundColor = game.hit;
         }
@@ -444,11 +447,12 @@ function renderHits(playerBoard, shipBoard, domEl) {
 }
 
 // RENDER SHIPS AT POS TO COLOR
-function renderShipBoard(shipBoard, color) {
+function renderShipBoard(shipBoard, color, opacity) {
     shipBoard.forEach(ship => {
         ship.pos.forEach(pos => {
             const elm = gridEl[pos[0]].children[pos[1]+1];
             elm.style.backgroundColor = color;
+            elm.style.opacity = `${opacity}`;
         });
     });
 }

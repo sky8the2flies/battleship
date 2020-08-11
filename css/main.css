@@ -52,13 +52,11 @@ header h1 {
 
 .grid-container {
     grid-area: board;
-    background-color: rgb(228, 148, 0);
 }
 
 .computer-container {
     display: none;
     grid-area: computer-board;
-    background-color: rgb(228, 148, 0);
 }
 
 table.table-board {
@@ -84,6 +82,14 @@ tr.table-board:nth-child(even) td.grid-board:nth-child(odd) {
 tr.table-board:nth-child(odd) td.computer-board:nth-child(even),
 tr.table-board:nth-child(even) td.computer-board:nth-child(odd) {
     background-color: orange;
+}
+
+td.grid-board {
+    background-color: rgb(228, 148, 0);
+}
+
+td.computer-board{
+    background-color: rgb(228, 148, 0);
 } 
 
 .ship-container {
