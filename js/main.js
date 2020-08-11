@@ -268,6 +268,7 @@ function isGameOver() {
     return player.shipBoard.length >= 5 && (isShipsInArray(computer.shipBoard, player.playerBoard) || isShipsInArray(player.shipBoard, computer.playerBoard));
 }
 
+
 // CHECK IF SHIP IS INSIDE POSITION ARRAY
 function isShipInArray(shipArr, posArr) {
     let inPos = false;
@@ -330,7 +331,7 @@ function render() {
     isGameOver() ? replayBtnEl.style.display = 'block' : replayBtnEl.style.display = 'none';
 
     if (player.shipBoard.length >= 5 && player.playerBoard.length === 0) {
-        renderShipBoard(player.shipBoard, game.water, 0.8);
+        renderShipBoard(player.shipBoard, game.water, 0.8, gridEl);
     }
 
     renderTempBoard();
@@ -338,6 +339,8 @@ function render() {
     renderPlayerShips(player.shipBoard);
     renderHits(computer.playerBoard, player.shipBoard, computerBoardEls);
     renderComputerHits(computer.playerBoard, player.shipBoard);
+    renderDestroyedShips(player.shipBoard, computer.playerBoard, computerBoardEls);
+    renderDestroyedShips(computer.shipBoard, player.playerBoard, gridEl);
 }
 
 function renderMessageContents() {
@@ -360,14 +363,9 @@ function renderMessageContents() {
 }
 
 function renderTempBoard() {
-    // REMOVE TEMP BOARD
-    if (player.playerBoard.length === 0 && computer.playerBoard.length === 0) {
-        renderShipBoard(player.shipBoard, game.water, 0.8);
-    }
-
     // RENDER TEMP BAORD
     if (player.shipBoard.length < 5) {
-        renderShipBoard(player.shipBoard, game.miss, 1);
+        renderShipBoard(player.shipBoard, game.miss, 1, gridEl);
         player.tempBoard.forEach(pos => {
             if (pos !== null) {
                 const elmParent = gridEl[pos[0]];
@@ -379,6 +377,21 @@ function renderTempBoard() {
             }
         });
     }
+}
+
+function renderDestroyedShips(shipBoard, playerBoard, board) {
+    const mapArr = playerBoard.map(pos => pos.toString());
+    shipBoard.forEach(ship => {
+        const newArr = [];
+        ship.pos.forEach(pos => {
+            if (mapArr.includes(pos.toString())) {
+                newArr.push(pos);
+            }
+        });
+        if (newArr.toString() === ship.pos.toString()) {
+            renderShip(ship, "gray", 0.8, board);
+        }
+    });
 }
 
 // RESET BOARD TO DEFAULT COLORS
@@ -447,12 +460,16 @@ function renderHits(playerBoard, shipBoard, domEl) {
 }
 
 // RENDER SHIPS AT POS TO COLOR
-function renderShipBoard(shipBoard, color, opacity) {
+function renderShipBoard(shipBoard, color, opacity, board) {
     shipBoard.forEach(ship => {
-        ship.pos.forEach(pos => {
-            const elm = gridEl[pos[0]].children[pos[1]+1];
-            elm.style.backgroundColor = color;
-            elm.style.opacity = `${opacity}`;
-        });
+        renderShip(ship, color, opacity, board);
+    });
+}
+// RENDER SHIP AT POS TO COLOR
+function renderShip(ship, color, opacity, board) {
+    ship.pos.forEach(pos => {
+        const elm = board[pos[0]].children[pos[1]+1];
+        elm.style.backgroundColor = color;
+        elm.style.opacity = `${opacity}`;
     });
 }
