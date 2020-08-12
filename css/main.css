@@ -9,15 +9,13 @@ body {
     font-family: Helvetica;
     width: 100%;
     background-image: url("https://sky8the2flies.github.io/battleship/imgs/Water.jpg");
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
     grid-template-rows: 50px auto auto auto auto auto;
     grid-template-areas:
-    "header"
-    "msg"
-    "board"
-    "button"
-    "ship-text"
-    "ship-board";
+    "header header"
+    "msg ship-text"
+    "board computer-board"
+    "button button";
 }
 
 header {
@@ -55,7 +53,7 @@ header h1 {
 }
 
 .computer-container {
-    display: none;
+    margin-bottom: 5px;;
     grid-area: computer-board;
 }
 
@@ -69,8 +67,8 @@ table.table-board {
 }
 
 td.table-board {
-    width: 25px; 
-    height: 25px;
+    width: 20px; 
+    height: 20px;
     border: 2px solid #333;
 }
 
@@ -92,17 +90,6 @@ td.computer-board{
     background-color: rgb(228, 148, 0);
 } 
 
-.ship-container {
-    grid-area: ship-board;
-    border-collapse: separate;
-    border-spacing: 2px 5px; 
-    border: hidden;
-}
-
-.ship-board {
-    background-color: white;
-}
-
 table.player-board {
     display: block;
     margin: 5px auto 0px;
@@ -117,10 +104,6 @@ td.player-board {
 }
 
 
-.player-ship-board {
-    background-color: rgb(228, 148, 0);
-}
-
 .s-button {
     display: flex;
     grid-area: button;
@@ -133,7 +116,7 @@ td.player-board {
     display: block;
     background-color: rgb(231, 150, 0);
     font-weight: bold;
-    padding: 5px;
+    padding: 2px;
 }
 
 .s-button > button:hover {
@@ -175,17 +158,9 @@ td.player-board {
         height: 28px;
     }
 
-    .computer-container {
-        display: block;
-    }
-
     #ship-text {
         font-size: 20px;
         padding: 5px;
-    }
-
-    table.player-board {
-        display: none;
     }
 }
 
