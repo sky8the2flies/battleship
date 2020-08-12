@@ -1,8 +1,3 @@
-/*
-            TODO
-    [] Make the AI a bit better
-
-*/
 /*----- constants -----*/
 const game = {
     boardSize: 10,
@@ -26,7 +21,6 @@ let turn;
 const gridEl = document.querySelectorAll('tr.grid-parent');
 const computerBoardEls = document.querySelectorAll('tr.computer-parent');
 const gridContainerEl = document.querySelector('.grid-container');
-const playerBoardEls = document.querySelectorAll('tr.ship-parent');
 const msgEl = document.querySelector('#msg');
 const switchBtnEl = document.querySelector('.s-button > button');
 const replayBtnEl = document.querySelector('.r-button > button');
@@ -42,7 +36,7 @@ replayBtnEl.addEventListener('click', init);
 init();
 
 function init() {
-    player = new Player([], []);
+    player = new Player([], [], [], []);
     createRandomBoard();
     turn = Math.floor(Math.random() * (2 - 1 + 1) + 1) === 1 ? 1 : -1;
     resetBoards();
@@ -62,7 +56,7 @@ function createRandomBoard() {
         }
     }
     // MAKE COMPUTER INITIALIZED TO CREATE SHIP BOARD
-    computer = new Computer(playerBoard, shipBoard);
+    computer = new Computer(playerBoard, shipBoard, [], []);
 
     // ADD ALL POSITIONS FOR RANDOMIZE HITS
     computer.allPositions = [...freePositions];
@@ -73,41 +67,38 @@ function createRandomBoard() {
 
 // FINDS RANDOM SHIP POSITIONS WITH DIFFERENT DIRECTIONS WHILE NOT COLLIDING
 function findShipsPositions(freePositions, shipBoard) {
-    const randomDirection = Math.floor(Math.random() * (1+1));
-    const min = 0;
-    const max = freePositions.length - 1;
-    const randomIndex = Math.floor(Math.random() * (max - min + 1) + min);
-
-    // CHECK IF RANDOM NUMBER CAN HOLD SHIP
-    if (freePositions[randomIndex][randomDirection] > (10 - game[shipBoard.length])) {
-        return findShipsPositions(freePositions, shipBoard);
-    }
-
-    // CHECK IF SHIPS ARE OVERLAPPING
-    const freePos = freePositions[randomIndex];
-    const posX = freePos[0];
-    const posY = freePos[1];
-    const xOff = randomDirection === 0 ? game[shipBoard.length]-1 : 0;
-    const yOff = randomDirection === 1 ? game[shipBoard.length]-1 : 0;
-    for (let i = 0 ; i < game.shipAmount; i++) {
-        if (shipBoard[i] === undefined) break;
-        for (let x = 0 ; x < game[shipBoard.length-1]; x++) {
-            if (isShipInPos(shipBoard[i], posX + (xOff === 0 ? 0 : x), posY + (yOff === 0 ? 0 : x))) {
-                return findShipsPositions(freePositions, shipBoard);
+    while (shipBoard.length < 5) {
+        let randomDirection = Math.floor(Math.random() * 2);
+        let randomIndex = Math.floor(Math.random() * (freePositions.length));
+        while (freePositions[randomIndex][randomDirection] > (10 - game[shipBoard.length])) {
+            randomIndex = Math.floor(Math.random() * (freePositions.length));
+            randomDirection = Math.floor(Math.random() * 2);
+        }    
+        const freePos = freePositions[randomIndex];
+        const posX = freePos[0];
+        const posY = freePos[1];
+        const xOff = randomDirection === 0 ? game[shipBoard.length]-1 : 0;
+        const yOff = randomDirection === 1 ? game[shipBoard.length]-1 : 0;
+        let overlap = false;
+        
+        // CHECK IF SHIPS ARE OVERLAPPING
+        for (let i = 0 ; i < game.shipAmount; i++) {
+            if (shipBoard[i] === undefined) break;
+            for (let x = 0 ; x < game[shipBoard.length-1]; x++) {
+                if (isShipInPos(shipBoard[i], posX + (xOff === 0 ? 0 : x), posY + (yOff === 0 ? 0 : x))) {
+                    overlap = true;
+                }
             }
         }
+        if (!overlap) {
+            // SHIP HAS BEEN FOUND
+            let ship = new Ship(posX, posY, xOff, yOff);
+            shipBoard.push(ship);
+
+            // REMOVE NOT FREE POSITIONS
+            ship.pos.forEach(sPos => freePositions = freePositions.filter(fPos => fPos.toString() !== sPos.toString()));
+        }
     }
-
-    // SHIP HAS BEEN FOUND
-    let ship = new Ship(posX, posY, xOff, yOff);
-    shipBoard.push(ship);
-
-    // REMOVE NOT FREE POSITIONS
-    ship.pos.forEach(sPos => freePositions = freePositions.filter(fPos => fPos.toString() !== sPos.toString()));
-
-    // IF ALL SHIPS AREN'T FOUND, RUN AGAIN
-    if (shipBoard.length-1 < game.shipAmount)
-        return findShipsPositions(freePositions, shipBoard);
 }
 
 // HANDLE RENDER FOR PLACING SHIPS
@@ -147,6 +138,7 @@ function handleClick(e) {
     const posArr = e.target.id.split(',');
     const posX = parseInt(posArr[0]);
     const posY = parseInt(posArr[1]);
+    const pos = [posX, posY];
     if (player.shipBoard.length < 5) {
         // CALLS WHEN PLAYER NEEDS TO PLACE SHIPS
 
@@ -175,8 +167,12 @@ function handleClick(e) {
     // CALLS WHEN GAME BEGINS
     if (turn === 1) {
         // CHECK IF PLAYER HAS ALREADY PLACED SHIP
-        if (player.playerBoard.every(pos => pos.toString() !== [posX, posY].toString())) {
-            player.playerBoard.push([posX, posY]);
+        if (player.playerBoard.every(pPos => pPos.toString() !== pos.toString())) {
+            player.playerBoard.push(pos);
+            if (isShipInPosArray(computer.shipBoard, posX, posY)) {
+                player.hitBoard.push(pos);
+                checkShipArray(computer.shipBoard, pos);
+            }
             handleNextMove();
             player.newInput = true;
         } 
@@ -197,6 +193,10 @@ function handleNextMove() {
 
         //ADD POSITION TO PLAYER BOARD
         computer.playerBoard.push(pos);
+        if (isShipInPosArray(player.shipBoard, pos[0], pos[1])) {
+            computer.hitBoard.push(pos);
+            checkShipArray(player.shipBoard, pos);
+        }
 
         // RUN AI
         handleGreatMoves(pos);
@@ -242,9 +242,6 @@ function handleGreatMoves(pos) {
 
             // ADD POSITION TO GREAT MOVES +1 Y FROM NODEARRAY
             addPosToArray(computer.greatMoves, computer.nodeArray[computer.nodeArray.length-1][0], computer.nodeArray[computer.nodeArray.length-1][1], 0, 1);
-            // RESET IF CAN'T FIND OR SHIP IS DESTROYED
-            if (computer.greatMoves.length === 0 || computer.nodeArray.length >= 6) 
-                computer.nodeArray = [];
         } else {
             computer.nodeArray = computer.nodeArray.sort((a,b) => a[0] - b[0]);
             computer.greatMoves = [];
@@ -265,7 +262,7 @@ function addPosToArray(arr, x, y, xOff, yOff) {
 }
 
 function isGameOver() {
-    return player.shipBoard.length >= 5 && (isShipsInArray(computer.shipBoard, player.playerBoard) || isShipsInArray(player.shipBoard, computer.playerBoard));
+    return player.shipBoard.length >= 5 && (isShipsInArray(computer.shipBoard, player.hitBoard) || isShipsInArray(player.shipBoard, computer.hitBoard));
 }
 
 
@@ -282,6 +279,8 @@ function isShipInArray(shipArr, posArr) {
     return inPos;
 }
 
+//TODO FIGURE THIS OUT
+
 // CHECK IF ALL SHIPS ARE IN POSITIONS
 function isShipsInArray(shipArr, posArr) {
     // LOOP THROUGH ALL SHIPS, CHECK IF ALL SHIPS HAVE BEEN HIT
@@ -295,8 +294,9 @@ function isShipsInArray(shipArr, posArr) {
 function isShipInPosArray(shipArr, x, y) {
     let inPos = false;
     shipArr.forEach(ship => {
-        if (isShipInPos(ship, x, y))
+        if (isShipInPos(ship, x, y)) {
             inPos = true;
+        }
     });
     return inPos;
 }
@@ -304,6 +304,26 @@ function isShipInPosArray(shipArr, x, y) {
 // CHECK IF SHIP COLLIDES WITH POSITION
 function isShipInPos(ship, x, y) {
     return ship.pos.some(pos => (pos[0] === x) && (pos[1] === y));
+}
+
+// Check all ships for destroy
+function checkShipArray(shipArray, pos) {
+    shipArray.forEach(ship => {
+        if (isShipInPos(ship, pos[0], pos[1])) {
+            checkShip(ship, pos);
+        }
+    });
+}
+
+// Check ship for destroy
+function checkShip(ship, pos) {
+    const mapArr = ship.pos.map(mPos => mPos.toString());
+    if (!mapArr.includes(pos)) {
+        ship.hitPositions.push(pos);
+        if (ship.hitPositions.length === ship.pos.length) {
+            ship.destroyed = true;
+        }
+    }
 }
 
 // GET INDEX OF SHIP IN SHIPBOARD AT X, Y
@@ -335,12 +355,11 @@ function render() {
     }
 
     renderTempBoard();
-    renderHits(player.playerBoard, computer.shipBoard, gridEl);
-    renderPlayerShips(player.shipBoard);
-    renderHits(computer.playerBoard, player.shipBoard, computerBoardEls);
-    renderComputerHits(computer.playerBoard, player.shipBoard);
-    renderDestroyedShips(player.shipBoard, computer.playerBoard, computerBoardEls);
-    renderDestroyedShips(computer.shipBoard, player.playerBoard, gridEl);
+    renderPositions(player.playerBoard, computer.shipBoard, gridEl);
+    renderPositions(computer.playerBoard, player.shipBoard, computerBoardEls);
+    renderDestroyedShips(computer.shipBoard, gridEl);
+    renderDestroyedShips(player.shipBoard, computerBoardEls);
+    renderShipBoard(computer.shipBoard, game.miss, 1, computerBoardEls);
 }
 
 function renderMessageContents() {
@@ -354,9 +373,9 @@ function renderMessageContents() {
             msgEl.textContent = "Pick an unused position!"
         }
         player.newInput = false;
-        if (isShipsInArray(computer.shipBoard, player.playerBoard)) {
+        if (isShipsInArray(computer.shipBoard, player.hitBoard)) {
             msgEl.textContent = "You have won!"
-        } else if (isShipsInArray(player.shipBoard, computer.playerBoard)) {
+        } else if (isShipsInArray(player.shipBoard, computer.hitBoard)) {
             msgEl.textContent = "The opponent has won!"
         }
     }
@@ -379,16 +398,9 @@ function renderTempBoard() {
     }
 }
 
-function renderDestroyedShips(shipBoard, playerBoard, board) {
-    const mapArr = playerBoard.map(pos => pos.toString());
+function renderDestroyedShips(shipBoard, board) {
     shipBoard.forEach(ship => {
-        const newArr = [];
-        ship.pos.forEach(pos => {
-            if (mapArr.includes(pos.toString())) {
-                newArr.push(pos);
-            }
-        });
-        if (newArr.toString() === ship.pos.toString()) {
+        if (ship.destroyed) {
             renderShip(ship, "gray", 0.8, board);
         }
     });
@@ -406,48 +418,16 @@ function resetBoards() {
     }
     for (row of computerBoardEls) {
         for (grid of row.children) {
-            if (grid.id !== '') {
+            if (grid.textContent === '') {
                 grid.style.backgroundColor = game.water;
                 grid.style.opacity = '0.8';
             }
         }
-    }
-    for (row of playerBoardEls) {
-        for (ship of row.children) {
-            if(ship.classList.length === 2) {
-                ship.style.backgroundColor = 'rgb(228, 148, 0)';
-            }
-        }
-    }
-    
-}
-
-//RENDER PLAYER SHIP BOARD TO COLOR
-function renderPlayerShips(shipBoard) {
-    shipBoard.forEach(ship => {
-        ship.pos.forEach(pos => {
-            let shipIndex = getShipIndex(shipBoard, pos[0], pos[1]);
-            let posIndex = getPosIndex(shipBoard[shipIndex], pos[0], pos[1]);
-            const shipEl = playerBoardEls[shipIndex].children[posIndex];
-            shipEl.style.backgroundColor = game.miss;
-        });
-    });
-}
-
-// RENDER COMPUTER HITS ON PLAYER 'SHIP BOARD'
-function renderComputerHits(playerBoard, shipBoard) {
-    playerBoard.forEach(pos => {
-        if (isShipInPosArray(shipBoard, pos[0], pos[1])) {
-            let shipIndex = getShipIndex(shipBoard, pos[0], pos[1]);
-            let posIndex = getPosIndex(shipBoard[shipIndex], pos[0], pos[1]);
-            const shipEl = playerBoardEls[shipIndex].children[posIndex];
-            shipEl.style.backgroundColor = game.hit;
-        } 
-    });
+    }    
 }
 
 // RENDER HITS FROM PLAYERBOARD USING SHIPBOARD
-function renderHits(playerBoard, shipBoard, domEl) {
+function renderPositions(playerBoard, shipBoard, domEl) {
     playerBoard.forEach(pos => {
         const elm = domEl[pos[0]].children[pos[1]+1];
         if (isShipInPosArray(shipBoard, pos[0], pos[1])) {
@@ -465,6 +445,7 @@ function renderShipBoard(shipBoard, color, opacity, board) {
         renderShip(ship, color, opacity, board);
     });
 }
+
 // RENDER SHIP AT POS TO COLOR
 function renderShip(ship, color, opacity, board) {
     ship.pos.forEach(pos => {
