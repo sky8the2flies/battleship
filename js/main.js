@@ -359,7 +359,7 @@ function render() {
     renderPositions(computer.playerBoard, player.shipBoard, computerBoardEls);
     renderDestroyedShips(computer.shipBoard, gridEl);
     renderDestroyedShips(player.shipBoard, computerBoardEls);
-    renderShipBoard(computer.shipBoard, game.miss, 1, computerBoardEls);
+    //renderShipBoard(computer.shipBoard, game.miss, 1, computerBoardEls);
 }
 
 function renderMessageContents() {
