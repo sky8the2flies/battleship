@@ -8,7 +8,7 @@ body {
     display: grid;
     font-family: Helvetica;
     width: 100%;
-    background-image: url('/imgs/Water.jpg');
+    background-image: url('https://sky8the2flies.github.io/battleship/imgs/Water.jpg');
     grid-template-columns: 1fr;
     grid-template-rows: 50px auto auto auto auto auto;
     grid-template-areas:
