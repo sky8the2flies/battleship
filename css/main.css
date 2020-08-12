@@ -24,7 +24,7 @@ header {
     display: flex;
     justify-content: center;
     align-content: center;
-    background-color: rgb(228, 148, 0);
+    background-color: orange;
     grid-area: header;
     width: 100%;
     text-align: center;
