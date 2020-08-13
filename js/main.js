@@ -3,7 +3,7 @@ const game = {
     boardSize: 10,
     hit: 'gray',
     miss: '#FF5733',
-    ship: '#0BC402',
+    ship: 'orange',
     water: '#9dc1fc',
     shipAmount: 4, // Total ships
     '0': 5, // Destroyer size
@@ -339,11 +339,11 @@ function render() {
     isGameOver() ? replayBtnEl.style.display = 'block' : replayBtnEl.style.display = 'none';
 
     if (player.shipBoard.length >= 5 && player.playerBoard.length === 0) {
-        renderShipBoard(player.shipBoard, game.water, 0.8, gridEl);
+        renderShipBoard(player.shipBoard, game.water, 0.6, gridEl);
     }
 
     // RENDER SHIPS ON COMPUTER BOARD
-    renderShipBoard(player.shipBoard, game.ship, 1, computerBoardEls);
+    renderShipBoard(player.shipBoard, game.ship, 0.7, computerBoardEls);
 
     //RENDER 'DRAG AND DROP'
     renderTempBoard();
@@ -407,7 +407,7 @@ function resetBoards() {
         for (grid of row.children) {
             if (grid.id !== '') {
                 grid.style.backgroundColor = game.water;
-                grid.style.opacity = '0.8';
+                grid.style.opacity = '0.6';
             }
         }
     }
@@ -415,7 +415,7 @@ function resetBoards() {
         for (grid of row.children) {
             if (grid.textContent === '') {
                 grid.style.backgroundColor = game.water;
-                grid.style.opacity = '0.8';
+                grid.style.opacity = '0.6';
             }
         }
     }    
@@ -430,6 +430,7 @@ function renderPositions(playerBoard, shipBoard, domEl) {
             elm.style.opacity = '1';
         } else {
             elm.style.backgroundColor = game.miss;
+            elm.style.opacity = '0.9';
         }
     });
 }
