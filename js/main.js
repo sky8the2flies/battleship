@@ -1,8 +1,9 @@
 /*----- constants -----*/
 const game = {
     boardSize: 10,
-    hit: '#FF5733',
-    miss: '#0BC402',
+    hit: 'gray',
+    miss: '#FF5733',
+    ship: '#0BC402',
     water: '#9dc1fc',
     shipAmount: 4, // Total ships
     '0': 5, // Destroyer size
@@ -119,7 +120,7 @@ function handleMouseOver(e) {
         || isShipInArray(player.shipBoard, player.tempBoard)) {
             player.color = game.hit;
         } else {
-            player.color = game.miss;
+            player.color = game.ship;
         }
     }
     render();
@@ -151,7 +152,7 @@ function handleClick(e) {
         // CREATE NEW SHIP AT POSITION
         const ship = new Ship(posX, posY, (player.direction === 0 ? game[player.shipBoard.length]-1 : 0), (player.direction === 1 ? game[player.shipBoard.length]-1 : 0));
         player.shipBoard.push(ship);
-        player.color = game.hit;
+        player.color = game.ship;
         if (player.shipBoard.length >= 5) {
             // BEGIN GAME
             player.tempBoard = [];
@@ -186,9 +187,7 @@ function handleNextMove() {
     if (turn === -1) {
         //COMPUTER TURN
         let positions = (computer.greatMoves.length > 0 ? computer.greatMoves : computer.allPositions);
-        const min = 0;
-        const max = positions.length-1;
-        const posIndex = Math.floor(Math.random() * (max - min + 1) + min);
+        const posIndex = Math.floor(Math.random() * positions.length);
         let pos = positions[posIndex];
 
         //ADD POSITION TO PLAYER BOARD
@@ -205,7 +204,6 @@ function handleNextMove() {
         computer.allPositions = computer.allPositions.filter(aPos => aPos.toString() !== pos.toString());
         computer.greatMoves = computer.greatMoves.filter(gPos => gPos.toString() !== pos.toString());
 
-        // NEXT TURN
         handleNextMove();
     } 
 }
@@ -233,24 +231,14 @@ function handleGreatMoves(pos) {
         // CHECK DIRECTION, X OR Y
         const nodeDirX = computer.nodeArray[computer.nodeArray.length-1][0] - computer.nodeArray[0][0];
         const nodeDirection = (nodeDirX === 0 ? 0 : 1);
-        if (nodeDirection === 0) {
-            computer.nodeArray = computer.nodeArray.sort((a,b) =>  a[1] - b[1]);
-            computer.greatMoves = [];
+        computer.nodeArray = computer.nodeArray.sort((a,b) =>  a[(nodeDirection === 0 ? 1 : 0)] - b[(nodeDirection === 0 ? 1 : 0)]);
+        computer.greatMoves = [];
 
-            // ADD POSITION TO GREAT MOVES -1 Y FROM NODEARRAY
-            addPosToArray(computer.greatMoves, computer.nodeArray[0][0], computer.nodeArray[0][1], 0, -1);
+        // ADD POSITION TO GREAT MOVES -1 Y FROM NODEARRAY
+        addPosToArray(computer.greatMoves, computer.nodeArray[0][0], computer.nodeArray[0][1], (nodeDirection === 0 ? 0 : -1), (nodeDirection === 0 ? -1 : 0));
 
-            // ADD POSITION TO GREAT MOVES +1 Y FROM NODEARRAY
-            addPosToArray(computer.greatMoves, computer.nodeArray[computer.nodeArray.length-1][0], computer.nodeArray[computer.nodeArray.length-1][1], 0, 1);
-        } else {
-            computer.nodeArray = computer.nodeArray.sort((a,b) => a[0] - b[0]);
-            computer.greatMoves = [];
-            // ADD POSITION TO GREAT MOVES -1 X FROM NODEARRAY
-            addPosToArray(computer.greatMoves, computer.nodeArray[0][0], computer.nodeArray[0][1], -1, 0);
-
-            // ADD POSITION TO GREAT MOVES +1 X FROM NODEARRAY
-            addPosToArray(computer.greatMoves, computer.nodeArray[computer.nodeArray.length-1][0], computer.nodeArray[computer.nodeArray.length-1][1], 1, 0);
-        }
+        // ADD POSITION TO GREAT MOVES +1 Y FROM NODEARRAY
+        addPosToArray(computer.greatMoves, computer.nodeArray[computer.nodeArray.length-1][0], computer.nodeArray[computer.nodeArray.length-1][1], (nodeDirection === 0 ? 0 : 1), (nodeDirection === 0 ? 1 : 0));
     }
 }
 
@@ -354,12 +342,19 @@ function render() {
         renderShipBoard(player.shipBoard, game.water, 0.8, gridEl);
     }
 
+    // RENDER SHIPS ON COMPUTER BOARD
+    renderShipBoard(player.shipBoard, game.ship, 1, computerBoardEls);
+
+    //RENDER 'DRAG AND DROP'
     renderTempBoard();
+
+    // RENDER HITS AND MISSES
     renderPositions(player.playerBoard, computer.shipBoard, gridEl);
     renderPositions(computer.playerBoard, player.shipBoard, computerBoardEls);
+
+    //RENDER DESTROYED SHIP
     renderDestroyedShips(computer.shipBoard, gridEl);
     renderDestroyedShips(player.shipBoard, computerBoardEls);
-    //renderShipBoard(computer.shipBoard, game.miss, 1, computerBoardEls);
 }
 
 function renderMessageContents() {
@@ -384,7 +379,7 @@ function renderMessageContents() {
 function renderTempBoard() {
     // RENDER TEMP BAORD
     if (player.shipBoard.length < 5) {
-        renderShipBoard(player.shipBoard, game.miss, 1, gridEl);
+        renderShipBoard(player.shipBoard, game.ship, 1, gridEl);
         player.tempBoard.forEach(pos => {
             if (pos !== null) {
                 const elmParent = gridEl[pos[0]];
@@ -401,7 +396,7 @@ function renderTempBoard() {
 function renderDestroyedShips(shipBoard, board) {
     shipBoard.forEach(ship => {
         if (ship.destroyed) {
-            renderShip(ship, "gray", 0.8, board);
+            renderShip(ship, "gray", 0.7, board);
         }
     });
 }
@@ -431,10 +426,10 @@ function renderPositions(playerBoard, shipBoard, domEl) {
     playerBoard.forEach(pos => {
         const elm = domEl[pos[0]].children[pos[1]+1];
         if (isShipInPosArray(shipBoard, pos[0], pos[1])) {
-            elm.style.backgroundColor = game.miss;
+            elm.style.backgroundColor = game.hit;
             elm.style.opacity = '1';
         } else {
-            elm.style.backgroundColor = game.hit;
+            elm.style.backgroundColor = game.miss;
         }
     });
 }
