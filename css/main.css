@@ -8,12 +8,13 @@ body {
     display: grid;
     font-family: Helvetica;
     width: 100%;
-    background-image: url("https://sky8the2flies.github.io/battleship/imgs/Water.jpg");
+    background-color: rgb(0, 0, 0);
+    background-size: cover;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 50px auto auto auto auto auto;
     grid-template-areas:
     "header header"
-    "msg ship-text"
+    "msg msg"
     "board computer-board"
     "button button";
 }
@@ -35,17 +36,11 @@ header h1 {
 
 #msg {
     grid-area: msg;
-    text-align: center;
-    font-size: 20px;
+    font-size: 30px;
     padding: 5px;
     color: orange;
-}
-
-#ship-text {
-    grid-area: ship-text;
+    margin: auto;
     text-align: center;
-    font-size: 15px;
-    color: orange;
 }
 
 .grid-container {
@@ -64,6 +59,7 @@ table.table-board {
     height: 2fr;
     width: 2fr;
     text-align: center;
+    background-image: url("https://sky8the2flies.github.io/battleship/imgs/Water.jpg");
 }
 
 td.table-board {
@@ -114,6 +110,7 @@ td.player-board {
 
 .s-button > button {
     display: block;
+    border: none;
     background-color: rgb(231, 150, 0);
     font-weight: bold;
     padding: 2px;
@@ -133,6 +130,7 @@ td.player-board {
 
 .r-button > button {
     display: none;
+    border: none;
     background-color: rgb(231, 150, 0);
     font-weight: bold;
     padding: 5px;
@@ -149,7 +147,7 @@ td.player-board {
         grid-template-rows: 50px auto auto auto;
         grid-template-areas:
         "header header"
-        "msg ship-text"
+        "msg msg"
         "board computer-board"
         "button button";
     }
@@ -157,16 +155,11 @@ td.player-board {
         width: 28px; 
         height: 28px;
     }
-
-    #ship-text {
-        font-size: 20px;
-        padding: 5px;
-    }
 }
 
 @media only screen and (min-width: 800px) {
     td.table-board {
-        width: 35px; 
-        height: 35px;
+        width: 33px; 
+        height: 33px;
     }
 }
