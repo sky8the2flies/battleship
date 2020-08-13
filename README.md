@@ -9,7 +9,7 @@ This is battleship, where you play agains a computer fighting to control the wat
 - [Author](#Author)
 
 ## Images
-![Game Image](#)
+![Game Image](https://sky8the2flies.github.io/battleship/imgs/Water.jpg)
 
 ## Technologies used
 1. HTML
