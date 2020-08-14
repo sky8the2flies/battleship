@@ -29,7 +29,7 @@ Rules for battleship are very simple:
 ### Play
 To play the game, just click the link below:
 
-[Play the game](https://sky8the2flies.github.io/battleship/)
+[Battleship: The game](https://sky8the2flies.github.io/battleship/)
 
 ## Next Steps
 - [] I would love to add images of the actual ships, I will learn more CSS and begin work on this.
